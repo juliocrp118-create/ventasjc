@@ -2,17 +2,21 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Inventario PRO Offline</title>
+<title>VentasJC PRO</title>
 <style>
-body { font-family: Arial; padding: 20px; }
-button { margin: 5px; }
-.card { border:1px solid #ccc; padding:10px; margin:10px 0; border-radius:10px;}
-input { margin: 5px; }
+body { font-family: Arial; padding: 20px; background:#f0f4f8; }
+h2 { color:#0d6efd; }
+.card { background:white; padding:12px; margin:10px 0; border-radius:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1);}
+button { margin:3px; padding:6px 10px; border:none; border-radius:5px; cursor:pointer;}
+.vender{ background:#28a745; color:white;}
+.agregar{ background:#0d6efd; color:white;}
+.restar{ background:#dc3545; color:white;}
+input { margin:5px; padding:5px;}
 </style>
 </head>
 <body>
 
-<h2>Inventario PRO Offline</h2>
+<h2>VentasJC - Inventario PRO</h2>
 
 <button onclick="cambiarUsuario()">Cambiar Usuario</button>
 <p id="usuario"></p>
@@ -22,21 +26,16 @@ input { margin: 5px; }
 <input id="stock" placeholder="Stock">
 <input id="costo" placeholder="Costo">
 <input id="precio" placeholder="Precio">
-<button onclick="agregar()">Agregar</button>
+<button class="agregar" onclick="agregar()">Agregar</button>
 
 <div id="productos"></div>
 
-<h3>Historial</h3>
-<div id="historial"></div>
-
-<h3>Total: <span id="total">0</span></h3>
+<h3>Ganancias</h3>
+<div id="ganancias"></div>
 
 <script>
-let usuario = localStorage.getItem("usuario") || "admin";
-let productos = JSON.parse(localStorage.getItem("productos")) || [
- {nombre:"Pote 1L", stock:20, costo:850, precio:1200},
- {nombre:"Tina 4L", stock:10, costo:2900, precio:3500}
-];
+let usuario = localStorage.getItem("usuario") || "Julio";
+let productos = JSON.parse(localStorage.getItem("productos")) || [];
 let ventas = JSON.parse(localStorage.getItem("ventas")) || [];
 
 function guardar(){
@@ -46,63 +45,58 @@ function guardar(){
 }
 
 function cambiarUsuario(){
- usuario = usuario === "admin" ? "empleado" : "admin";
- guardar();
- render();
+ usuario = usuario==="Julio"?"Naysa":"Julio";
+ guardar(); render();
 }
 
 function agregar(){
- let n = document.getElementById("nombre").value;
- let s = Number(document.getElementById("stock").value);
- let c = Number(document.getElementById("costo").value);
- let p = Number(document.getElementById("precio").value);
-
- if(!n) return alert("Nombre requerido");
-
- productos.push({nombre:n, stock:s, costo:c, precio:p});
- guardar();
- render();
+ let n=document.getElementById("nombre").value;
+ let s=+document.getElementById("stock").value;
+ let c=+document.getElementById("costo").value;
+ let p=+document.getElementById("precio").value;
+ if(!n)return alert("Nombre requerido");
+ productos.push({nombre:n,stock:s,costo:c,precio:p});
+ guardar(); render();
 }
 
 function vender(i){
- if(productos[i].stock <= 0){ alert("Sin stock"); return; }
+ if(productos[i].stock<=0)return alert("Sin stock");
  productos[i].stock--;
+ ventas.push({...productos[i]});
+ guardar(); render();
+}
 
- ventas.push({
-  producto: productos[i].nombre,
-  precio: productos[i].precio,
-  usuario: usuario,
-  fecha: new Date().toLocaleString()
- });
-
- guardar();
- render();
+function quitarStock(i){
+ if(productos[i].stock<=0)return;
+ productos[i].stock--;
+ guardar(); render();
 }
 
 function render(){
- document.getElementById("usuario").innerText = "Usuario: " + usuario;
+ document.getElementById("usuario").innerText="Usuario: "+usuario;
 
- let prodHTML = "";
+ let html="";
  productos.forEach((p,i)=>{
-  prodHTML += `
-  <div class="card">
-    <b>${p.nombre}</b><br>
-    Stock: ${p.stock}<br>
-    Ganancia: ${p.precio - p.costo}<br>
-    <button onclick="vender(${i})">Vender</button>
+  html+=`<div class='card'>
+  <b>${p.nombre}</b><br>
+  Stock:${p.stock}<br>
+  Ganancia unidad:${p.precio-p.costo}<br>
+  <button class='vender' onclick='vender(${i})'>Vender</button>
+  <button class='restar' onclick='quitarStock(${i})'>Quitar Stock</button>
   </div>`;
  });
- document.getElementById("productos").innerHTML = prodHTML;
+ document.getElementById("productos").innerHTML=html;
 
- let histHTML = "";
- let total = 0;
+ let gananciaPotes=0, gananciaTinas=0;
+
  ventas.forEach(v=>{
-  total += v.precio;
-  histHTML += `<div>${v.fecha} - ${v.producto} - ${v.precio} - ${v.usuario}</div>`;
+  let g=v.precio-v.costo;
+  if(v.nombre.toLowerCase().includes("pote")) gananciaPotes+=g;
+  if(v.nombre.toLowerCase().includes("tina")) gananciaTinas+=g;
  });
 
- document.getElementById("historial").innerHTML = histHTML;
- document.getElementById("total").innerText = total;
+ document.getElementById("ganancias").innerHTML=
+  "Potes: "+gananciaPotes+" CUP<br>Tinas: "+gananciaTinas+" CUP";
 }
 
 render();
