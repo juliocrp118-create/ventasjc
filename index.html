@@ -42,6 +42,12 @@ button {
   border-radius:5px;
 }
 
+.logout {
+  background:#6c757d;
+  color:white;
+  float:right;
+}
+
 .hidden { display:none; }
 
 .vender{background:#28a745;color:white;}
@@ -72,6 +78,8 @@ button {
 
 <div id="app" class="hidden">
 <div class="overlay">
+
+<button class="logout" onclick="logout()">Cerrar sesión</button>
 
 <h2>VentasJC</h2>
 <p><b>Usuario:</b> Julio</p>
@@ -117,6 +125,12 @@ function login(){
  } else {
   alert("Datos incorrectos");
  }
+}
+
+function logout(){
+ document.getElementById("app").classList.add("hidden");
+ document.getElementById("loginDiv").classList.remove("hidden");
+ document.getElementById("pass").value="";
 }
 
 function guardar(){
