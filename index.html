@@ -4,13 +4,15 @@
 <meta charset="UTF-8">
 <title>VentasJC PRO</title>
 <style>
-body { font-family: Arial; padding: 20px; background:#f0f4f8; }
+body { font-family: Arial; padding: 20px; background:#eef2f7; }
 h2 { color:#0d6efd; }
+.container { display:flex; gap:20px; }
+.col { flex:1; }
 .card { background:white; padding:12px; margin:10px 0; border-radius:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1);}
 button { margin:3px; padding:6px 10px; border:none; border-radius:5px; cursor:pointer;}
 .vender{ background:#28a745; color:white;}
+.editar{ background:#ffc107; color:black;}
 .agregar{ background:#0d6efd; color:white;}
-.restar{ background:#dc3545; color:white;}
 input { margin:5px; padding:5px;}
 </style>
 </head>
@@ -18,8 +20,7 @@ input { margin:5px; padding:5px;}
 
 <h2>VentasJC - Inventario PRO</h2>
 
-<button onclick="cambiarUsuario()">Cambiar Usuario</button>
-<p id="usuario"></p>
+<p><b>Usuario:</b> Julio</p>
 
 <h3>Agregar Producto</h3>
 <input id="nombre" placeholder="Nombre">
@@ -28,25 +29,27 @@ input { margin:5px; padding:5px;}
 <input id="precio" placeholder="Precio">
 <button class="agregar" onclick="agregar()">Agregar</button>
 
-<div id="productos"></div>
+<div class="container">
+  <div class="col">
+    <h3>Potes 1L</h3>
+    <div id="potes"></div>
+  </div>
+  <div class="col">
+    <h3>Tinas 4L</h3>
+    <div id="tinas"></div>
+  </div>
+</div>
 
 <h3>Ganancias</h3>
 <div id="ganancias"></div>
 
 <script>
-let usuario = localStorage.getItem("usuario") || "Julio";
 let productos = JSON.parse(localStorage.getItem("productos")) || [];
 let ventas = JSON.parse(localStorage.getItem("ventas")) || [];
 
 function guardar(){
- localStorage.setItem("usuario", usuario);
  localStorage.setItem("productos", JSON.stringify(productos));
  localStorage.setItem("ventas", JSON.stringify(ventas));
-}
-
-function cambiarUsuario(){
- usuario = usuario==="Julio"?"Naysa":"Julio";
- guardar(); render();
 }
 
 function agregar(){
@@ -66,34 +69,42 @@ function vender(i){
  guardar(); render();
 }
 
-function quitarStock(i){
- if(productos[i].stock<=0)return;
- productos[i].stock--;
+function editarStock(i){
+ let nuevo = prompt("Nuevo stock:", productos[i].stock);
+ if(nuevo===null) return;
+ productos[i].stock = Number(nuevo);
  guardar(); render();
 }
 
 function render(){
- document.getElementById("usuario").innerText="Usuario: "+usuario;
+ let potesHTML="", tinasHTML="";
+ let gananciaPotes=0, gananciaTinas=0;
 
- let html="";
  productos.forEach((p,i)=>{
-  html+=`<div class='card'>
+  let card = `
+  <div class='card'>
   <b>${p.nombre}</b><br>
   Stock:${p.stock}<br>
   Ganancia unidad:${p.precio-p.costo}<br>
   <button class='vender' onclick='vender(${i})'>Vender</button>
-  <button class='restar' onclick='quitarStock(${i})'>Quitar Stock</button>
+  <button class='editar' onclick='editarStock(${i})'>Editar Stock</button>
   </div>`;
- });
- document.getElementById("productos").innerHTML=html;
 
- let gananciaPotes=0, gananciaTinas=0;
+  if(p.costo==850){
+    potesHTML+=card;
+  } else if(p.costo==2900){
+    tinasHTML+=card;
+  }
+ });
 
  ventas.forEach(v=>{
   let g=v.precio-v.costo;
-  if(v.nombre.toLowerCase().includes("pote")) gananciaPotes+=g;
-  if(v.nombre.toLowerCase().includes("tina")) gananciaTinas+=g;
+  if(v.costo==850) gananciaPotes+=g;
+  if(v.costo==2900) gananciaTinas+=g;
  });
+
+ document.getElementById("potes").innerHTML=potesHTML;
+ document.getElementById("tinas").innerHTML=tinasHTML;
 
  document.getElementById("ganancias").innerHTML=
   "Potes: "+gananciaPotes+" CUP<br>Tinas: "+gananciaTinas+" CUP";
