@@ -12,43 +12,35 @@ body {
   background-position: center;
   background-attachment: fixed;
 }
-
 .overlay {
   background: rgba(255,255,255,0.92);
   min-height:100vh;
   padding:20px;
 }
-
 .login {
   display:flex;
   justify-content:center;
   align-items:center;
   height:100vh;
 }
-
 .box {
   background:white;
   padding:20px;
   border-radius:10px;
   text-align:center;
 }
-
 .hidden { display:none; }
-
 button { margin:5px;padding:8px;border:none;border-radius:5px;}
 .vender{background:#28a745;color:white;}
 .editar{background:#ffc107;}
 .eliminar{background:#dc3545;color:white;}
 .agregar{background:#0d6efd;color:white;}
 .logout{background:#6c757d;color:white;float:right;}
-
 .flex{display:flex;gap:20px;}
 .col{flex:1;}
 .card{background:white;padding:10px;margin:10px 0;border-radius:10px;}
-
 .grid{display:flex;gap:20px;margin-top:20px;}
 .box2{background:white;padding:10px;border-radius:10px;flex:1;}
-
 .center{text-align:center;margin-top:20px;}
 .table{background:white;padding:10px;border-radius:10px;display:inline-block;}
 </style>
@@ -91,7 +83,7 @@ button { margin:5px;padding:8px;border:none;border-radius:5px;}
 <div class="center">
   <div class="table">
     <h3>Ventas</h3>
-    <p id="conteo"></p>
+    <p id="conteoTexto"></p>
   </div>
   <br>
   <button onclick="reiniciar()">Reiniciar Conteo</button>
@@ -103,7 +95,7 @@ button { margin:5px;padding:8px;border:none;border-radius:5px;}
 <script>
 let productos = JSON.parse(localStorage.getItem("productos")) || [];
 let ventas = JSON.parse(localStorage.getItem("ventas")) || [];
-let conteo = JSON.parse(localStorage.getItem("conteo")) || {potes:0,tinas:0};
+let conteoData = JSON.parse(localStorage.getItem("conteo")) || {potes:0,tinas:0};
 
 function login(){
  if(user.value==="Julio" && pass.value==="1234*"){
@@ -120,7 +112,7 @@ function logout(){
 function guardar(){
  localStorage.setItem("productos",JSON.stringify(productos));
  localStorage.setItem("ventas",JSON.stringify(ventas));
- localStorage.setItem("conteo",JSON.stringify(conteo));
+ localStorage.setItem("conteo",JSON.stringify(conteoData));
 }
 
 function agregar(){
@@ -133,8 +125,8 @@ function vender(i){
 
  productos[i].stock--;
 
- if(productos[i].costo==850) conteo.potes++;
- if(productos[i].costo==2900) conteo.tinas++;
+ if(productos[i].costo==850) conteoData.potes++;
+ if(productos[i].costo==2900) conteoData.tinas++;
 
  ventas.push({...productos[i]});
  guardar();
@@ -153,7 +145,7 @@ function eliminar(i){
 }
 
 function reiniciar(){
- conteo={potes:0,tinas:0};
+ conteoData={potes:0,tinas:0};
  ventas=[];
  guardar();
  render();
@@ -186,7 +178,8 @@ function render(){
  inversion.innerHTML=`Potes:${ip}<br>Tinas:${it}`;
  reinvertir.innerHTML=`Potes:${rp}<br>Tinas:${rt}`;
 
- conteo.innerHTML=`Potes vendidos: ${conteo.potes}<br>Tinas vendidas: ${conteo.tinas}`;
+ document.getElementById("conteoTexto").innerHTML =
+   "Potes vendidos: " + conteoData.potes + "<br>Tinas vendidas: " + conteoData.tinas;
 }
 
 render();
