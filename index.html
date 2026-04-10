@@ -4,7 +4,13 @@
 <meta charset="UTF-8">
 <title>VentasJC</title>
 <style>
-body{font-family:Arial;margin:0;background-size:cover}
+/* 🔥 DISEÑO ORIGINAL RESTAURADO */
+body{
+  font-family: Arial;
+  margin:0;
+  background-image: url('data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD');
+  background-size:cover;
+}
 .hidden{display:none}
 .overlay{background:rgba(0,0,0,0.6);min-height:100vh;padding:20px;color:white}
 input{margin:5px;padding:8px;border-radius:5px;border:none}
@@ -54,7 +60,6 @@ button{padding:8px 12px;margin:5px;border:none;border-radius:5px;cursor:pointer}
 
 </div>
 
-<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
@@ -71,10 +76,78 @@ const db = firebase.firestore();
 let productos = [];
 let conteoData = {potes:0,tinas:0};
 
+// 🔥 LOGIN ARREGLADO
 function login(){
- if(user.value==="Julio" && pass.value==="1234*"){
-  loginDiv.classList.add("hidden");
-  app.classList.remove("hidden");
+ if(document.getElementById("user").value==="Julio" && document.getElementById("pass").value==="1234*"){
+  document.getElementById("loginDiv").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+ } else {
+  alert("Usuario o contraseña incorrecta");
  }
 }
+
+function logout(){
+ document.getElementById("app").classList.add("hidden");
+ document.getElementById("loginDiv").classList.remove("hidden");
+}
+
+function agregar(){
+ let nuevo = {
+   nombre:nombre.value,
+   stock:+stock.value,
+   costo:+costo.value,
+   precio:+precio.value,
+   tipo:(+costo.value)==850?"pote":"tina"
+ };
+
+ db.collection("productos").add(nuevo);
+}
+
+// 🔥 TIEMPO REAL
+db.collection("productos").onSnapshot(snapshot=>{
+ productos=[];
+ snapshot.forEach(doc=>{
+   let data=doc.data();
+   data.id=doc.id;
+   productos.push(data);
+ });
+ render();
+});
+
+function vender(id,i){
+ if(productos[i].stock<=0)return;
+ let nuevoStock = productos[i].stock-1;
+ if(productos[i].tipo=="pote") conteoData.potes++;
+ else conteoData.tinas++;
+ db.collection("productos").doc(id).update({stock:nuevoStock});
+}
+
+function eliminar(id){
+ db.collection("productos").doc(id).delete();
+}
+
+function reiniciar(){
+ conteoData={potes:0,tinas:0};
+ render();
+}
+
+function render(){
+ let pHTML="",tHTML="";
+ productos.forEach((p,i)=>{
+ let card=`<div class='card'>
+ ${p.nombre}<br>
+ Stock:${p.stock}<br>
+ <button onclick="vender('${p.id}',${i})">Vender</button>
+ <button onclick="eliminar('${p.id}')">Eliminar</button>
+ </div>`;
+ if(p.tipo==="pote") pHTML+=card;
+ else tHTML+=card;
+ });
+ potes.innerHTML=pHTML;
+ tinas.innerHTML=tHTML;
+ conteoTexto.innerHTML="Potes vendidos: "+conteoData.potes+"<br>Tinas vendidos: "+conteoData.tinas;
+}
+</script>
+
+</body>
 </html>
