@@ -74,29 +74,10 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 </div>
 
 <div class="grid">
-  <div class="box">
-    💰 Ganancias<br><br>
-    Potes: <span id="gananciasPotes">0</span><br>
-    Tinas: <span id="gananciasTinas">0</span>
-  </div>
-
-  <div class="box">
-    📦 Inversión<br><br>
-    Potes: <span id="inversionPotes">0</span><br>
-    Tinas: <span id="inversionTinas">0</span>
-  </div>
-
-  <div class="box">
-    🔄 Reinvertir<br><br>
-    Potes: <span id="reinvertirPotes">0</span><br>
-    Tinas: <span id="reinvertirTinas">0</span>
-  </div>
-
-  <div class="box">
-    💵 Hoy<br><br>
-    Potes: <span id="hoyPotes">0</span><br>
-    Tinas: <span id="hoyTinas">0</span>
-  </div>
+  <div class="box">💰 Potes: <span id="gananciasPotes">0</span></div>
+  <div class="box">💰 Tinas: <span id="gananciasTinas">0</span></div>
+  <div class="box">📦 Inv Potes: <span id="inversionPotes">0</span></div>
+  <div class="box">📦 Inv Tinas: <span id="inversionTinas">0</span></div>
 </div>
 
 <div class="center">
@@ -116,12 +97,9 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-
-<!-- 🔥 LIBRERÍA EXCEL -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <script>
-
 const firebaseConfig = {
  apiKey: "AIzaSyDgTmtl4VoF2UahIDZGVwQ11TuayHv2eHw",
  authDomain: "ventasjc-b1a1d.firebaseapp.com",
@@ -132,20 +110,12 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 let productos=[];
-let conteoData={potes:0,tinas:0};
 
-let gPotes=0, gTinas=0;
-let rPotes=0, rTinas=0;
-let hPotes=0, hTinas=0;
-
+// LOGIN
 function login(){
- let u=user.value.trim();
- let p=pass.value.trim();
- if(u==="Julio" && p==="1234*"){
+ if(user.value==="Julio" && pass.value==="1234*"){
   loginDiv.style.display="none";
   app.style.display="block";
- }else{
-  alert("Datos incorrectos");
  }
 }
 
@@ -154,20 +124,14 @@ function logout(){
  loginDiv.style.display="flex";
 }
 
-// 🔥 AGREGAR CON ORDEN
+// AGREGAR
 function agregar(){
+ let c=+costo.value;
+ let tipo="";
 
- let c = +costo.value;
- let tipo = "";
-
- if(c === 850){
-   tipo = "pote";
- }else if(c === 2900){
-   tipo = "tina";
- }else{
-   alert("Costo inválido");
-   return;
- }
+ if(c===850) tipo="pote";
+ else if(c===2900) tipo="tina";
+ else return alert("Costo inválido");
 
  db.collection("productos").add({
   nombre:nombre.value,
@@ -175,45 +139,50 @@ function agregar(){
   costo:c,
   precio:+precio.value,
   tipo:tipo,
-  fecha: firebase.firestore.FieldValue.serverTimestamp()
+  fecha:new Date() // 🔥 SIEMPRE GUARDA FECHA
  });
 }
 
-// 🔥 ORDENAR
-db.collection("productos")
-.orderBy("fecha","asc")
-.onSnapshot(snapshot=>{
- productos=[];
- snapshot.forEach(doc=>{
-  let d=doc.data(); d.id=doc.id;
-  productos.push(d);
- });
- render();
+// 🔥 CARGAR SIN ROMPER
+db.collection("productos").onSnapshot(snapshot=>{
+ try{
+  productos=[];
+
+  snapshot.forEach(doc=>{
+    let d=doc.data();
+    d.id=doc.id;
+
+    // 🔥 SI NO TIENE FECHA → SE LA CREO
+    if(!d.fecha){
+      d.fecha=new Date();
+    }else if(d.fecha.toDate){
+      d.fecha=d.fecha.toDate();
+    }
+
+    productos.push(d);
+  });
+
+  // 🔥 ORDEN MANUAL (NO DEPENDE DE FIRESTORE)
+  productos.sort((a,b)=>a.fecha-b.fecha);
+
+  render();
+
+ }catch(e){
+  console.error("Error:",e);
+ }
 });
 
+// VENDER
 function vender(id,i){
  let p=productos[i];
  if(p.stock<=0)return;
 
- db.collection("productos").doc(id).update({stock:p.stock-1});
-
- let g=p.precio-p.costo;
-
- if(p.tipo==="pote"){
-  gPotes+=g;
-  rPotes+=p.costo;
-  hPotes+=p.precio;
-  conteoData.potes++;
- }else{
-  gTinas+=g;
-  rTinas+=p.costo;
-  hTinas+=p.precio;
-  conteoData.tinas++;
- }
-
- render();
+ db.collection("productos").doc(id).update({
+  stock:p.stock-1
+ });
 }
 
+// EDITAR
 function editar(id,i){
  let n=prompt("Nuevo stock:",productos[i].stock);
  if(n!==null){
@@ -221,26 +190,24 @@ function editar(id,i){
  }
 }
 
+// ELIMINAR
 function eliminar(id){
  db.collection("productos").doc(id).delete();
 }
 
+// REINICIAR
 function reiniciar(){
- conteoData={potes:0,tinas:0};
- gPotes=gTinas=0;
- rPotes=rTinas=0;
- hPotes=hTinas=0;
- render();
+ location.reload();
 }
 
-// 🔥 EXPORTAR JSON
+// EXPORTAR JSON
 function exportar(){
  db.collection("productos").get().then(snapshot=>{
   let datos=[];
   snapshot.forEach(doc=>datos.push(doc.data()));
 
-  let archivo=new Blob([JSON.stringify(datos,null,2)],{type:"application/json"});
-  let url=URL.createObjectURL(archivo);
+  let blob=new Blob([JSON.stringify(datos,null,2)],{type:"application/json"});
+  let url=URL.createObjectURL(blob);
 
   let a=document.createElement("a");
   a.href=url;
@@ -249,32 +216,36 @@ function exportar(){
  });
 }
 
-// 🔥 IMPORTAR JSON
+// IMPORTAR JSON (ARREGLADO)
 function importar(e){
- let archivo=e.target.files[0];
- if(!archivo)return;
+ let file=e.target.files[0];
+ if(!file)return;
 
- let lector=new FileReader();
+ let reader=new FileReader();
 
- lector.onload=function(ev){
+ reader.onload=function(ev){
   let datos=JSON.parse(ev.target.result);
-  datos.forEach(p=>db.collection("productos").add(p));
-  alert("Importado");
+
+  datos.forEach(p=>{
+    db.collection("productos").add({
+      ...p,
+      fecha:new Date() // 🔥 SIEMPRE GENERA FECHA
+    });
+  });
+
+  alert("Importado correctamente");
  };
 
- lector.readAsText(archivo);
+ reader.readAsText(file);
 }
 
-// 🔥 EXPORTAR EXCEL
+// EXPORTAR EXCEL
 function exportarExcel(){
-
  db.collection("productos").get().then(snapshot=>{
-
   let datos=[];
 
   snapshot.forEach(doc=>{
     let p=doc.data();
-
     datos.push({
       Nombre:p.nombre,
       Stock:p.stock,
@@ -292,8 +263,8 @@ function exportarExcel(){
  });
 }
 
+// RENDER
 function render(){
-
  let pHTML="",tHTML="";
  let invP=0,invT=0;
 
@@ -318,19 +289,10 @@ function render(){
  potes.innerHTML=pHTML;
  tinas.innerHTML=tHTML;
 
- conteoTexto.innerHTML=`Potes:${conteoData.potes} | Tinas:${conteoData.tinas}`;
-
- gananciasPotes.innerText=gPotes;
- gananciasTinas.innerText=gTinas;
+ conteoTexto.innerHTML=`Total: ${productos.length}`;
 
  inversionPotes.innerText=invP;
  inversionTinas.innerText=invT;
-
- reinvertirPotes.innerText=rPotes;
- reinvertirTinas.innerText=rTinas;
-
- hoyPotes.innerText=hPotes;
- hoyTinas.innerText=hTinas;
 }
 </script>
 
