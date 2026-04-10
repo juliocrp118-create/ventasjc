@@ -256,19 +256,6 @@ function cajaDiaria(){
  return total;
 }
 
-function grafica(){
- let canvas=document.getElementById("graficaVentas");
- if(!canvas){
-  canvas=document.createElement("canvas");
-  canvas.id="graficaVentas";
-  canvas.width=300;
-  canvas.height=150;
-  canvas.style.position="fixed";
-  canvas.style.bottom="10px";
-  canvas.style.left="10px";
-  canvas.style.background="white";
-  document.body.appendChild(canvas);
- }
 
  let ctx=canvas.getContext("2d");
  ctx.clearRect(0,0,300,150);
@@ -315,7 +302,7 @@ let oldRender = render;
 render = function(){
  oldRender();
  panelPro();
- grafica();
+ 
 }
 </script>
 
@@ -343,20 +330,6 @@ function panelPro(){
 }
 
 // arreglar gráfica (quitar mancha negra)
-function grafica(){
- let canvas=document.getElementById("graficaVentas");
- if(!canvas){
-  canvas=document.createElement("canvas");
-  canvas.id="graficaVentas";
-  canvas.width=300;
-  canvas.height=150;
-  canvas.style.position="fixed";
-  canvas.style.bottom="80px";
-  canvas.style.left="10px";
-  canvas.style.background="white";
-  canvas.style.borderRadius="10px";
-  document.body.appendChild(canvas);
- }
 
  let ctx=canvas.getContext("2d");
  ctx.clearRect(0,0,300,150);
@@ -382,7 +355,7 @@ let oldRender2 = render;
 render = function(){
  oldRender2();
  panelPro();
- grafica();
+ 
 }
 </script>
 
