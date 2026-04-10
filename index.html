@@ -144,6 +144,7 @@ function logout(){
  loginDiv.style.display="flex";
 }
 
+// 🔥 AGREGAR CON FECHA (ORDEN)
 function agregar(){
 
  let c = +costo.value;
@@ -163,13 +164,17 @@ function agregar(){
   stock:+stock.value,
   costo:c,
   precio:+precio.value,
-  tipo:tipo
+  tipo:tipo,
+  fecha: firebase.firestore.FieldValue.serverTimestamp() // 🔥 CLAVE
  };
 
  db.collection("productos").add(nuevo);
 }
 
-db.collection("productos").onSnapshot(snapshot=>{
+// 🔥 ORDENAR PRODUCTOS
+db.collection("productos")
+.orderBy("fecha","asc")
+.onSnapshot(snapshot=>{
  productos=[];
  snapshot.forEach(doc=>{
   let d=doc.data(); d.id=doc.id;
@@ -227,7 +232,6 @@ function render(){
 
  productos.forEach((p,i)=>{
 
-   // 🔥 INVERSIÓN REAL (SOLO STOCK)
    if(p.tipo==="pote"){
      invP += p.stock * p.costo;
    }else{
