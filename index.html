@@ -147,7 +147,6 @@ function logout(){
 function agregar(){
 
  let c = +costo.value;
-
  let tipo = "";
 
  if(c === 850){
@@ -228,7 +227,7 @@ function render(){
 
  productos.forEach((p,i)=>{
 
-   // 🔥 inversión real por stock
+   // 🔥 INVERSIÓN REAL (SOLO STOCK)
    if(p.tipo==="pote"){
      invP += p.stock * p.costo;
    }else{
