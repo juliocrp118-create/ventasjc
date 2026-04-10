@@ -290,13 +290,20 @@ guardar = function(){
 }
 
 // cargar al iniciar
-window.addEventListener("load", ()=>{
- db.collection("productos").doc("data").get().then(doc=>{
-   if(doc.exists){
-     productos = doc.data().lista || [];
-     render();
-   }
- });
+<script>
+db.collection("productos").doc("data")
+.onSnapshot((doc)=>{
+
+ if(doc.exists){
+   productos = doc.data().lista || [];
+ } else {
+   productos = [];
+ }
+
+ localStorage.setItem("productos", JSON.stringify(productos));
+
+ render();
+
 });
 </script>
 
