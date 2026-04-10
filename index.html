@@ -4,24 +4,24 @@
 <meta charset="UTF-8">
 <title>VentasJC</title>
 <style>
-/* 🔥 DISEÑO ORIGINAL RESTAURADO */
 body{
   font-family: Arial;
   margin:0;
-  background-image: url('data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD');
-  background-size:cover;
+  background: linear-gradient(135deg,#1e3c72,#2a5298);
 }
 .hidden{display:none}
 .overlay{background:rgba(0,0,0,0.6);min-height:100vh;padding:20px;color:white}
-input{margin:5px;padding:8px;border-radius:5px;border:none}
-button{padding:8px 12px;margin:5px;border:none;border-radius:5px;cursor:pointer}
-.agregar{background:#0d6efd;color:white}
-.logout{background:#6c757d;color:white;float:right}
+input{margin:5px;padding:10px;border-radius:8px;border:none;width:200px}
+button{padding:10px 15px;margin:5px;border:none;border-radius:8px;cursor:pointer;font-weight:bold}
+.agregar{background:#00c853;color:white}
+.logout{background:#ff5252;color:white;float:right}
 .flex{display:flex;gap:20px}
 .col{flex:1}
-.card{background:white;color:black;padding:10px;margin:10px 0;border-radius:10px}
+.card{background:white;color:black;padding:15px;margin:10px 0;border-radius:15px;box-shadow:0 4px 10px rgba(0,0,0,0.3)}
+.card button{background:#1976d2;color:white}
 .center{text-align:center;margin-top:20px}
-.table{background:white;color:black;padding:10px;border-radius:10px;display:inline-block}
+.table{background:white;color:black;padding:15px;border-radius:15px;display:inline-block;box-shadow:0 4px 10px rgba(0,0,0,0.3)}
+h2,h3{text-shadow:1px 1px 3px black}
 </style>
 </head>
 <body>
@@ -76,28 +76,19 @@ const db = firebase.firestore();
 let productos = [];
 let conteoData = {potes:0,tinas:0};
 
-// 🔥 LOGIN ARREGLADO
 function login(){
-
  let usuario = document.getElementById("user").value.trim();
  let clave = document.getElementById("pass").value.trim();
-
- console.log("Usuario:", usuario);
- console.log("Clave:", clave);
 
  if(usuario === "Julio" && clave === "1234*"){
    document.getElementById("loginDiv").style.display = "none";
    document.getElementById("app").style.display = "block";
- } else {
-   alert("Usuario o contraseña incorrecta");
  }
-
-}
 }
 
 function logout(){
- document.getElementById("app").classList.add("hidden");
- document.getElementById("loginDiv").classList.remove("hidden");
+ document.getElementById("app").style.display = "none";
+ document.getElementById("loginDiv").style.display = "block";
 }
 
 function agregar(){
@@ -108,11 +99,9 @@ function agregar(){
    precio:+precio.value,
    tipo:(+costo.value)==850?"pote":"tina"
  };
-
  db.collection("productos").add(nuevo);
 }
 
-// 🔥 TIEMPO REAL
 db.collection("productos").onSnapshot(snapshot=>{
  productos=[];
  snapshot.forEach(doc=>{
@@ -160,4 +149,3 @@ function render(){
 
 </body>
 </html>
-
