@@ -183,6 +183,63 @@ function render(){
 }
 
 render();
+
+// === NUEVAS FUNCIONES SIN ROMPER NADA ===
+
+// recordar sesión (ya usa login existente)
+
+// ventas por fecha
+function obtenerHoy(){
+ return new Date().toDateString();
+}
+
+function ventasHoy(){
+ return ventas.filter(v=> new Date(v.fecha||Date.now()).toDateString()===obtenerHoy()).length;
+}
+
+function ventasMes(){
+ let m=new Date().getMonth();
+ return ventas.filter(v=> new Date(v.fecha||Date.now()).getMonth()===m).length;
+}
+
+// modificar vender para guardar fecha
+let _venderOriginal = vender;
+vender = function(i){
+ if(productos[i].stock<=0)return;
+ productos[i].stock--;
+
+ let venta = {...productos[i], fecha:new Date().toISOString()};
+ ventas.push(venta);
+
+ if(productos[i].costo==850) conteoData.potes++;
+ if(productos[i].costo==2900) conteoData.tinas++;
+
+ guardar(); render();
+}
+
+// agregar info visual
+function extraInfo(){
+ let div = document.getElementById("extraInfo");
+ if(!div){
+   div=document.createElement("div");
+   div.id="extraInfo";
+   document.body.appendChild(div);
+ }
+
+ div.innerHTML = `
+ <div style="position:fixed;bottom:10px;right:10px;background:white;padding:10px;border-radius:10px">
+ 📅 Hoy: ${ventasHoy()}<br>
+ 📆 Mes: ${ventasMes()}
+ </div>`;
+}
+
+// extender render
+let _renderOriginal = render;
+render = function(){
+ _renderOriginal();
+ extraInfo();
+}
+
 </script>
 
 </body>
