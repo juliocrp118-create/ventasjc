@@ -33,7 +33,7 @@ button{padding:8px 12px;margin:5px;border:none;border-radius:5px;cursor:pointer}
   <button onclick="login()">Entrar</button>
 </div>
 
-<div id="app" class="hidden overlay">
+<div id="app" class="overlay" style="display:none;">
 <button class="logout" onclick="logout()">Cerrar sesión</button>
 
 <h2>VentasJC</h2>
@@ -78,12 +78,21 @@ let conteoData = {potes:0,tinas:0};
 
 // 🔥 LOGIN ARREGLADO
 function login(){
- if(document.getElementById("user").value==="Julio" && document.getElementById("pass").value==="1234*"){
-  document.getElementById("loginDiv").classList.add("hidden");
-  document.getElementById("app").classList.remove("hidden");
+
+ let usuario = document.getElementById("user").value.trim();
+ let clave = document.getElementById("pass").value.trim();
+
+ console.log("Usuario:", usuario);
+ console.log("Clave:", clave);
+
+ if(usuario === "Julio" && clave === "1234*"){
+   document.getElementById("loginDiv").style.display = "none";
+   document.getElementById("app").style.display = "block";
  } else {
-  alert("Usuario o contraseña incorrecta");
+   alert("Usuario o contraseña incorrecta");
  }
+
+}
 }
 
 function logout(){
@@ -151,3 +160,4 @@ function render(){
 
 </body>
 </html>
+
