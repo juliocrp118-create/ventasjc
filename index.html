@@ -2,15 +2,14 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>VentasJC</title>
+<title>VentasJC PRO</title>
 
 <style>
 body{
   font-family: Arial;
   margin:0;
-  background-image: url('fondo.jpg');
+  background: url('fondo.jpg') no-repeat center center fixed;
   background-size: cover;
-  background-position: center;
 }
 
 .overlay{
@@ -55,6 +54,7 @@ button{
  display:flex;
  gap:20px;
  margin-top:20px;
+ flex-wrap:wrap;
 }
 
 .box{
@@ -76,7 +76,6 @@ h2,h3{text-shadow:1px 1px 4px black}
 
 <body>
 
-<!-- LOGIN -->
 <div id="loginDiv" class="overlay">
 <h2>Login VentasJC</h2>
 <input id="user" placeholder="Usuario"><br>
@@ -84,12 +83,11 @@ h2,h3{text-shadow:1px 1px 4px black}
 <button onclick="login()">Entrar</button>
 </div>
 
-<!-- APP -->
 <div id="app" class="overlay" style="display:none;">
 
 <button class="logout" onclick="logout()">Cerrar sesión</button>
 
-<h2>VentasJC</h2>
+<h2>VentasJC PRO</h2>
 
 <input id="nombre" placeholder="Nombre">
 <input id="stock" placeholder="Stock">
@@ -102,33 +100,22 @@ h2,h3{text-shadow:1px 1px 4px black}
 <div class="col"><h3>Tinas 4L</h3><div id="tinas"></div></div>
 </div>
 
-<!-- COLUMNAS -->
 <div class="grid">
-  <div class="box">
-    💰 Ganancias<br>
-    <span id="ganancias">0</span>
-  </div>
-
-  <div class="box">
-    📦 Inversión<br>
-    <span id="inversion">0</span>
-  </div>
-
-  <div class="box">
-    🔄 Reinvertir<br>
-    <span id="reinvertir">0</span>
-  </div>
+  <div class="box">💰 Ganancias<br><span id="ganancias">0</span></div>
+  <div class="box">📦 Inversión<br><span id="inversion">0</span></div>
+  <div class="box">🔄 Reinvertir<br><span id="reinvertir">0</span></div>
+  <div class="box">💵 Hoy<br><span id="cajaHoy">0</span> CUP</div>
 </div>
 
 <div class="center">
 <h3>Ventas</h3>
 <p id="conteoTexto"></p>
 <button onclick="reiniciar()">Reiniciar Conteo</button>
+<button onclick="exportar()">Exportar Excel</button>
 </div>
 
 </div>
 
-<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
@@ -148,17 +135,34 @@ let conteoData = {potes:0,tinas:0};
 let totalGanancias = 0;
 let totalInversion = 0;
 let totalReinvertir = 0;
+let cajaHoy = 0;
 
-// LOGIN
+// 🔥 cargar datos
+if(localStorage.getItem("datos")){
+ let d = JSON.parse(localStorage.getItem("datos"));
+ totalGanancias = d.ganancias || 0;
+ totalInversion = d.inversion || 0;
+ totalReinvertir = d.reinvertir || 0;
+ conteoData = d.conteo || {potes:0,tinas:0};
+ cajaHoy = d.cajaHoy || 0;
+}
+
+function guardarDatos(){
+ localStorage.setItem("datos", JSON.stringify({
+   ganancias: totalGanancias,
+   inversion: totalInversion,
+   reinvertir: totalReinvertir,
+   conteo: conteoData,
+   cajaHoy: cajaHoy
+ }));
+}
+
 function login(){
- let usuario = document.getElementById("user").value.trim();
- let clave = document.getElementById("pass").value.trim();
-
+ let usuario = user.value.trim();
+ let clave = pass.value.trim();
  if(usuario === "Julio" && clave === "1234*"){
    loginDiv.style.display = "none";
    app.style.display = "block";
- } else {
-   alert("Usuario o contraseña incorrecta");
  }
 }
 
@@ -167,7 +171,6 @@ function logout(){
  loginDiv.style.display = "block";
 }
 
-// AGREGAR
 function agregar(){
  let nuevo = {
    nombre:nombre.value,
@@ -176,11 +179,9 @@ function agregar(){
    precio:+precio.value,
    tipo:(+costo.value)==850?"pote":"tina"
  };
-
  db.collection("productos").add(nuevo);
 }
 
-// TIEMPO REAL
 db.collection("productos").onSnapshot(snapshot=>{
  productos=[];
  snapshot.forEach(doc=>{
@@ -191,46 +192,51 @@ db.collection("productos").onSnapshot(snapshot=>{
  render();
 });
 
-// VENDER
 function vender(id,i){
  if(productos[i].stock<=0)return;
-
  let p = productos[i];
-
- db.collection("productos").doc(id).update({
-   stock:p.stock-1
- });
-
+ db.collection("productos").doc(id).update({stock:p.stock-1});
  let ganancia = p.precio - p.costo;
-
  totalGanancias += ganancia;
  totalInversion += p.costo;
  totalReinvertir += p.costo;
-
+ cajaHoy += p.precio;
  if(p.tipo=="pote") conteoData.potes++;
  else conteoData.tinas++;
-
+ guardarDatos();
  render();
 }
 
-// ELIMINAR
 function eliminar(id){
  db.collection("productos").doc(id).delete();
 }
 
-// REINICIAR
 function reiniciar(){
  conteoData={potes:0,tinas:0};
  totalGanancias=0;
  totalInversion=0;
  totalReinvertir=0;
+ cajaHoy=0;
+ guardarDatos();
  render();
 }
 
-// RENDER
+function exportar(){
+ let data = [["Producto","Costo","Precio","Ganancia"]];
+ productos.forEach(p=>{
+   data.push([p.nombre,p.costo,p.precio,p.precio-p.costo]);
+ });
+ let csv = data.map(e=>e.join(",")).join("\n");
+ let blob = new Blob([csv], { type: "text/csv" });
+ let url = URL.createObjectURL(blob);
+ let a = document.createElement("a");
+ a.href = url;
+ a.download = "ventas.csv";
+ a.click();
+}
+
 function render(){
  let pHTML="",tHTML="";
-
  productos.forEach((p,i)=>{
  let card=`<div class='card'>
  ${p.nombre}<br>
@@ -238,20 +244,16 @@ function render(){
  <button onclick="vender('${p.id}',${i})">Vender</button>
  <button onclick="eliminar('${p.id}')">Eliminar</button>
  </div>`;
-
  if(p.tipo==="pote") pHTML+=card;
  else tHTML+=card;
  });
-
  potes.innerHTML=pHTML;
  tinas.innerHTML=tHTML;
-
- conteoTexto.innerHTML =
- "Potes: "+conteoData.potes+" | Tinas: "+conteoData.tinas;
-
- document.getElementById("ganancias").innerText = totalGanancias;
- document.getElementById("inversion").innerText = totalInversion;
- document.getElementById("reinvertir").innerText = totalReinvertir;
+ conteoTexto.innerHTML = "Potes: "+conteoData.potes+" | Tinas: "+conteoData.tinas;
+ ganancias.innerText = totalGanancias;
+ inversion.innerText = totalInversion;
+ reinvertir.innerText = totalReinvertir;
+ cajaHoy.innerText = cajaHoy;
 }
 
 </script>
