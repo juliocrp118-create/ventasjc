@@ -9,21 +9,18 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// 🔥 LOCAL STORAGE
+// 🔥 LOCAL STORAGE (NUEVO)
 let productos = JSON.parse(localStorage.getItem("productos")) || [];
-let conteoData={potes:0,tinas:0};
-
-let gPotes=0, gTinas=0;
-let rPotes=0, rTinas=0;
-let hPotes=0, hTinas=0;
 
 function guardarLocal(){
  localStorage.setItem("productos", JSON.stringify(productos));
 }
 
-function online(){
- return navigator.onLine;
-}
+let conteoData={potes:0,tinas:0};
+
+let gPotes=0, gTinas=0;
+let rPotes=0, rTinas=0;
+let hPotes=0, hTinas=0;
 
 // LOGIN
 function login(){
@@ -42,7 +39,7 @@ function logout(){
  loginDiv.style.display="flex";
 }
 
-// 🔥 AGREGAR (LOCAL + NUBE)
+// 🔥 AGREGAR
 function agregar(){
 
  let c = +costo.value;
@@ -57,8 +54,7 @@ function agregar(){
    return;
  }
 
- let nuevo={
-  id: Date.now().toString(),
+ let nuevo = {
   nombre:nombre.value,
   stock:+stock.value,
   costo:c,
@@ -70,49 +66,39 @@ function agregar(){
  // LOCAL
  productos.push(nuevo);
  guardarLocal();
- render();
 
- // NUBE
- if(online()){
-   db.collection("productos").doc(nuevo.id).set({
-     ...nuevo,
-     fecha: firebase.firestore.FieldValue.serverTimestamp()
-   });
- }
-}
-
-// 🔥 CARGAR DESDE FIREBASE + MEZCLAR
-if(online()){
- db.collection("productos")
- .onSnapshot(snapshot=>{
-  
-  let nube=[];
-
-  snapshot.forEach(doc=>{
-    let d=doc.data();
-    d.id=doc.id;
-
-    if(d.fecha && d.fecha.toDate){
-      d.fecha=d.fecha.toDate();
-    }
-
-    nube.push(d);
-  });
-
-  let mapa={};
-
-  [...productos,...nube].forEach(p=>{
-    mapa[p.id]=p;
-  });
-
-  productos=Object.values(mapa);
-
-  guardarLocal();
-  render();
+ // FIREBASE
+ db.collection("productos").add({
+  ...nuevo,
+  fecha: firebase.firestore.FieldValue.serverTimestamp()
  });
+
+ render();
 }
 
-// 🔥 VENDER
+// 🔥 SINCRONIZACIÓN
+db.collection("productos")
+.orderBy("fecha","asc")
+.onSnapshot(snapshot=>{
+ productos=[];
+
+ snapshot.forEach(doc=>{
+  let d=doc.data();
+  d.id=doc.id;
+
+  // 🔥 CONVERTIR FECHA
+  if(d.fecha && d.fecha.toDate){
+    d.fecha = d.fecha.toDate();
+  }
+
+  productos.push(d);
+ });
+
+ guardarLocal(); // 🔥 GUARDA LOCAL
+ render();
+});
+
+// VENDER
 function vender(id,i){
  let p=productos[i];
  if(p.stock<=0)return;
@@ -121,9 +107,7 @@ function vender(id,i){
 
  guardarLocal();
 
- if(online()){
-  db.collection("productos").doc(p.id).update({stock:p.stock});
- }
+ db.collection("productos").doc(id).update({stock:p.stock});
 
  let g=p.precio-p.costo;
 
@@ -150,26 +134,19 @@ function editar(id,i){
   productos[i].stock=+n;
   guardarLocal();
 
-  if(online()){
-    db.collection("productos").doc(productos[i].id).update({stock:+n});
-  }
+  db.collection("productos").doc(id).update({stock:+n});
 
   render();
  }
 }
 
 // ELIMINAR
-function eliminar(id,i){
- let p=productos[i];
+function eliminar(id){
+ productos = productos.filter(p => p.id !== id);
 
- productos.splice(i,1);
  guardarLocal();
 
- if(online()){
-  db.collection("productos").doc(p.id).delete();
- }
-
- render();
+ db.collection("productos").doc(id).delete();
 }
 
 // REINICIAR
@@ -181,7 +158,7 @@ function reiniciar(){
  render();
 }
 
-// EXPORTAR JSON (LOCAL)
+// 🔥 EXPORTAR JSON
 function exportar(){
  let archivo=new Blob([JSON.stringify(productos,null,2)],{type:"application/json"});
  let url=URL.createObjectURL(archivo);
@@ -192,7 +169,7 @@ function exportar(){
  a.click();
 }
 
-// IMPORTAR
+// 🔥 IMPORTAR (ARREGLADO)
 function importar(e){
  let archivo=e.target.files[0];
  if(!archivo)return;
@@ -203,24 +180,20 @@ function importar(e){
   let datos=JSON.parse(ev.target.result);
 
   datos.forEach(p=>{
-    p.id=p.id || Date.now()+Math.random();
-    productos.push(p);
-
-    if(online()){
-      db.collection("productos").doc(p.id).set(p);
-    }
+    productos.push(p); // 🔥 LOCAL
+    db.collection("productos").add(p); // 🔥 FIREBASE
   });
 
   guardarLocal();
   render();
 
-  alert("Importado");
+  alert("Importado correctamente");
  };
 
  lector.readAsText(archivo);
 }
 
-// EXPORTAR EXCEL
+// 🔥 EXPORTAR EXCEL
 function exportarExcel(){
 
  let datos=productos.map(p=>({
@@ -241,8 +214,6 @@ function exportarExcel(){
 // 🔥 RENDER
 function render(){
 
- productos.sort((a,b)=>new Date(a.fecha)-new Date(b.fecha));
-
  let pHTML="",tHTML="";
  let invP=0,invT=0;
 
@@ -257,7 +228,7 @@ function render(){
    Stock:${p.stock}<br>
    <button onclick="vender('${p.id}',${i})">Vender</button>
    <button onclick="editar('${p.id}',${i})">Editar</button>
-   <button onclick="eliminar('${p.id}',${i})">Eliminar</button>
+   <button onclick="eliminar('${p.id}')">Eliminar</button>
    </div>`;
 
    if(p.tipo==="pote") pHTML+=card;
@@ -282,7 +253,7 @@ function render(){
  hoyTinas.innerText=hTinas;
 }
 
-// 🔥 INICIO
+// 🔥 INICIO (IMPORTANTE)
 render();
 
 </script>
