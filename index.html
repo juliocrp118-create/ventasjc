@@ -121,10 +121,6 @@ function guardarProducto(producto){
 
 }
 
-function agregar(){
- productos.push({nombre:nombre.value,stock:+stock.value,costo:+costo.value,precio:+precio.value});
- guardar();render();
-}
 
 function vender(i){
  if(productos[i].stock<=0)return;
@@ -289,12 +285,13 @@ async function guardarFirebase(){
 let oldGuardar = guardar;
 guardar = function(){
  oldGuardar();
- db.collection("productos").doc("data").set({lista: productos});
-}
+ 
 
 // cargar al iniciar
 <script>
-db.collection("productos").doc("data")
+function guardarProducto(producto){
+  db.collection("productos").add(producto);
+}
 .onSnapshot((doc)=>{
 
  if(doc.exists){
@@ -333,5 +330,18 @@ window.addEventListener("load", async ()=>{
 
 });
 </script>
+db.collection("productos").onSnapshot(snapshot => {
+
+ productos = [];
+
+ snapshot.forEach(doc => {
+   let data = doc.data();
+   data.id = doc.id;
+   productos.push(data);
+ });
+
+ render();
+
+});
 </body>
 </html>
