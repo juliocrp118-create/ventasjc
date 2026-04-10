@@ -110,7 +110,6 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
     Tinas: <span id="hoyTinas">0</span>
   </div>
 
-  <!-- 🔥 NUEVO CUADRO DE VENTAS -->
   <div class="box">
     📊 Ventas<br><br>
     🥤 Potes: <span id="ventasPotes">0</span><br>
@@ -162,6 +161,7 @@ function logout(){
  loginDiv.style.display="flex";
 }
 
+// 🔥 AGREGAR CON FECHA
 function agregar(){
  let c = +costo.value;
  let tipo = "";
@@ -180,13 +180,17 @@ function agregar(){
   stock:+stock.value,
   costo:c,
   precio:+precio.value,
-  tipo:tipo
+  tipo:tipo,
+  fecha: Date.now() // 🔥 para ordenar
  };
 
  db.collection("productos").add(nuevo);
 }
 
-db.collection("productos").onSnapshot(snapshot=>{
+// 🔥 ORDENADO POR FECHA
+db.collection("productos")
+.orderBy("fecha","asc")
+.onSnapshot(snapshot=>{
  productos=[];
  snapshot.forEach(doc=>{
   let d=doc.data(); d.id=doc.id;
