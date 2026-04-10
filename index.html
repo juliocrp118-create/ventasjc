@@ -88,7 +88,6 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
     Tinas: <span id="hoyTinas">0</span>
   </div>
 
-  <!-- 🔥 NUEVO BOX -->
   <div class="box">
     📦 Total Stock<br><br>
     Potes: <span id="stockPotes">0</span><br>
@@ -132,6 +131,30 @@ let conteoData={potes:0,tinas:0};
 let gPotes=0, gTinas=0;
 let rPotes=0, rTinas=0;
 let hPotes=0, hTinas=0;
+
+// 🔥 GUARDAR / CARGAR
+function guardarDatos(){
+ localStorage.setItem("ventasDatos", JSON.stringify({
+  gPotes,gTinas,rPotes,rTinas,hPotes,hTinas,conteoData
+ }));
+}
+
+function cargarDatos(){
+ let d = localStorage.getItem("ventasDatos");
+ if(d){
+  let data = JSON.parse(d);
+  gPotes = data.gPotes || 0;
+  gTinas = data.gTinas || 0;
+  rPotes = data.rPotes || 0;
+  rTinas = data.rTinas || 0;
+  hPotes = data.hPotes || 0;
+  hTinas = data.hTinas || 0;
+  conteoData = data.conteoData || {potes:0,tinas:0};
+ }
+}
+
+// 🔥 CARGAR AL INICIO
+cargarDatos();
 
 function login(){
  let u=user.value.trim();
@@ -203,6 +226,7 @@ function vender(id,i){
   conteoData.tinas++;
  }
 
+ guardarDatos(); // 🔥 guarda siempre
  render();
 }
 
@@ -222,6 +246,9 @@ function reiniciar(){
  gPotes=gTinas=0;
  rPotes=rTinas=0;
  hPotes=hTinas=0;
+
+ localStorage.removeItem("ventasDatos"); // 🔥 SOLO AQUÍ se borra
+
  render();
 }
 
@@ -229,10 +256,8 @@ function exportar(){
  db.collection("productos").get().then(snapshot=>{
   let datos=[];
   snapshot.forEach(doc=>datos.push(doc.data()));
-
   let archivo=new Blob([JSON.stringify(datos,null,2)],{type:"application/json"});
   let url=URL.createObjectURL(archivo);
-
   let a=document.createElement("a");
   a.href=url;
   a.download="productos.json";
@@ -243,25 +268,20 @@ function exportar(){
 function importar(e){
  let archivo=e.target.files[0];
  if(!archivo)return;
-
  let lector=new FileReader();
-
  lector.onload=function(ev){
   let datos=JSON.parse(ev.target.result);
   datos.forEach(p=>db.collection("productos").add(p));
   alert("Importado");
  };
-
  lector.readAsText(archivo);
 }
 
 function exportarExcel(){
  db.collection("productos").get().then(snapshot=>{
   let datos=[];
-
   snapshot.forEach(doc=>{
     let p=doc.data();
-
     datos.push({
       Nombre:p.nombre,
       Stock:p.stock,
@@ -270,10 +290,8 @@ function exportarExcel(){
       Tipo:p.tipo
     });
   });
-
   let hoja=XLSX.utils.json_to_sheet(datos);
   let libro=XLSX.utils.book_new();
-
   XLSX.utils.book_append_sheet(libro,hoja,"Productos");
   XLSX.writeFile(libro,"productos.xlsx");
  });
@@ -283,8 +301,6 @@ function render(){
 
  let pHTML="",tHTML="";
  let invP=0,invT=0;
-
- // 🔥 NUEVO
  let stockP=0, stockT=0;
 
  productos.forEach((p,i)=>{
@@ -327,7 +343,6 @@ function render(){
  hoyPotes.innerText=hPotes;
  hoyTinas.innerText=hTinas;
 
- // 🔥 NUEVO
  stockPotes.innerText = stockP;
  stockTinas.innerText = stockT;
 }
