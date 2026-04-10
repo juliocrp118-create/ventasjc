@@ -103,6 +103,11 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 <h3>Ventas</h3>
 <p id="conteoTexto"></p>
 <button onclick="reiniciar()">Reiniciar</button>
+
+<!-- 🔥 NUEVOS BOTONES -->
+<br><br>
+<button onclick="exportar()">📤 Exportar</button>
+<input type="file" onchange="importar(event)">
 </div>
 
 </div>
@@ -144,7 +149,7 @@ function logout(){
  loginDiv.style.display="flex";
 }
 
-// 🔥 AGREGAR CON FECHA (ORDEN)
+// 🔥 AGREGAR CON ORDEN
 function agregar(){
 
  let c = +costo.value;
@@ -155,23 +160,21 @@ function agregar(){
  }else if(c === 2900){
    tipo = "tina";
  }else{
-   alert("Costo inválido (850 o 2900)");
+   alert("Costo inválido");
    return;
  }
 
- let nuevo={
+ db.collection("productos").add({
   nombre:nombre.value,
   stock:+stock.value,
   costo:c,
   precio:+precio.value,
   tipo:tipo,
-  fecha: firebase.firestore.FieldValue.serverTimestamp() // 🔥 CLAVE
- };
-
- db.collection("productos").add(nuevo);
+  fecha: firebase.firestore.FieldValue.serverTimestamp()
+ });
 }
 
-// 🔥 ORDENAR PRODUCTOS
+// 🔥 ORDENAR
 db.collection("productos")
 .orderBy("fecha","asc")
 .onSnapshot(snapshot=>{
@@ -223,6 +226,44 @@ function reiniciar(){
  rPotes=rTinas=0;
  hPotes=hTinas=0;
  render();
+}
+
+// 🔥 EXPORTAR
+function exportar(){
+ db.collection("productos").get().then(snapshot=>{
+  let datos=[];
+  snapshot.forEach(doc=>{
+   datos.push(doc.data());
+  });
+
+  let archivo=new Blob([JSON.stringify(datos,null,2)],{type:"application/json"});
+  let url=URL.createObjectURL(archivo);
+
+  let a=document.createElement("a");
+  a.href=url;
+  a.download="productos_backup.json";
+  a.click();
+ });
+}
+
+// 🔥 IMPORTAR
+function importar(event){
+ let archivo=event.target.files[0];
+ if(!archivo)return;
+
+ let lector=new FileReader();
+
+ lector.onload=function(e){
+  let datos=JSON.parse(e.target.result);
+
+  datos.forEach(p=>{
+   db.collection("productos").add(p);
+  });
+
+  alert("Datos importados");
+ };
+
+ lector.readAsText(archivo);
 }
 
 function render(){
