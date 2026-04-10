@@ -12,56 +12,35 @@ body {
   background-position: center;
   background-attachment: fixed;
 }
-
 .overlay {
   background: rgba(255,255,255,0.9);
   min-height:100vh;
   padding:20px;
 }
-
 .login {
   display:flex;
   justify-content:center;
   align-items:center;
   height:100vh;
 }
-
 .box {
   background:white;
   padding:20px;
   border-radius:10px;
   text-align:center;
 }
-
-input { margin:5px; padding:8px; }
-
-button {
-  margin:5px;
-  padding:8px;
-  border:none;
-  border-radius:5px;
-}
-
-.logout {
-  background:#6c757d;
-  color:white;
-  float:right;
-}
-
 .hidden { display:none; }
-
+button { margin:5px;padding:8px;border:none;border-radius:5px;}
 .vender{background:#28a745;color:white;}
 .editar{background:#ffc107;}
 .eliminar{background:#dc3545;color:white;}
 .agregar{background:#0d6efd;color:white;}
-
+.logout{background:#6c757d;color:white;float:right;}
 .flex{display:flex;gap:20px;}
 .col{flex:1;}
 .card{background:white;padding:10px;margin:10px 0;border-radius:10px;}
-
 .grid{display:flex;gap:20px;margin-top:20px;}
 .box2{background:white;padding:10px;border-radius:10px;flex:1;}
-
 .center{text-align:center;margin-top:20px;}
 </style>
 </head>
@@ -69,7 +48,7 @@ button {
 
 <div id="loginDiv" class="login">
   <div class="box">
-    <h2>VentasJC Login</h2>
+    <h2>Login VentasJC</h2>
     <input id="user" placeholder="Usuario"><br>
     <input id="pass" type="password" placeholder="Contraseña"><br>
     <button onclick="login()">Entrar</button>
@@ -82,7 +61,6 @@ button {
 <button class="logout" onclick="logout()">Cerrar sesión</button>
 
 <h2>VentasJC</h2>
-<p><b>Usuario:</b> Julio</p>
 
 <input id="nombre" placeholder="Nombre">
 <input id="stock" placeholder="Stock">
@@ -104,7 +82,7 @@ button {
 <div class="center">
 <h3>Ventas</h3>
 <div id="conteo"></div>
-<button onclick="reiniciar()">Reiniciar</button>
+<button onclick="reiniciar()">Reiniciar Conteo</button>
 </div>
 
 </div>
@@ -116,21 +94,15 @@ let ventas = JSON.parse(localStorage.getItem("ventas")) || [];
 let conteo = JSON.parse(localStorage.getItem("conteo")) || {potes:0,tinas:0};
 
 function login(){
- let u=document.getElementById("user").value;
- let p=document.getElementById("pass").value;
-
- if(u==="Julio" && p==="1234*"){
-  document.getElementById("loginDiv").classList.add("hidden");
-  document.getElementById("app").classList.remove("hidden");
- } else {
-  alert("Datos incorrectos");
- }
+ if(user.value==="Julio" && pass.value==="1234*"){
+  loginDiv.classList.add("hidden");
+  app.classList.remove("hidden");
+ } else alert("Error");
 }
 
 function logout(){
- document.getElementById("app").classList.add("hidden");
- document.getElementById("loginDiv").classList.remove("hidden");
- document.getElementById("pass").value="";
+ app.classList.add("hidden");
+ loginDiv.classList.remove("hidden");
 }
 
 function guardar(){
@@ -145,12 +117,22 @@ function agregar(){
 }
 
 function vender(i){
- if(productos[i].stock<=0)return;
+ if(productos[i].stock<=0)return alert("Sin stock");
+
  productos[i].stock--;
- ventas.push(productos[i]);
- if(productos[i].costo==850)conteo.potes++;
- if(productos[i].costo==2900)conteo.tinas++;
- guardar();render();
+
+ // CLAVE: actualizar conteo correctamente SIEMPRE
+ if(productos[i].costo==850){
+   conteo.potes = (conteo.potes || 0) + 1;
+ }
+ if(productos[i].costo==2900){
+   conteo.tinas = (conteo.tinas || 0) + 1;
+ }
+
+ ventas.push({...productos[i]});
+
+ guardar();
+ render();
 }
 
 function editar(i){
@@ -165,9 +147,10 @@ function eliminar(i){
 }
 
 function reiniciar(){
- conteo={potes:0,tinas:0};
- ventas=[];
- guardar();render();
+ conteo = {potes:0,tinas:0};
+ ventas = [];
+ guardar();
+ render();
 }
 
 function render(){
