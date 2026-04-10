@@ -361,8 +361,19 @@ render = function(){
 
 
 <script>
-// mover exportar y caja juntos abajo izquierda
-function panelUbicacion(){
+// asegurar funciones necesarias
+function cajaDiaria(){
+ let hoy = new Date().toDateString();
+ let total=0;
+ ventas.forEach(v=>{
+  let f=new Date(v.fecha||Date.now()).toDateString();
+  if(f===hoy) total+=v.precio;
+ });
+ return total;
+}
+
+// panel abajo izquierda
+function panelFinal(){
  let div=document.getElementById("panelFinal");
  if(!div){
   div=document.createElement("div");
@@ -377,18 +388,21 @@ function panelUbicacion(){
   document.body.appendChild(div);
  }
 
- div.innerHTML = `
- 💰 Hoy: ${cajaDiaria()} CUP<br><br>
- <button onclick="exportar()">📤 Exportar Excel</button>
- `;
+ div.innerHTML = "💰 Hoy: "+cajaDiaria()+" CUP<br><br><button onclick='exportar()'>📤 Exportar Excel</button>";
 }
 
-// extender render
-let oldRenderFinal = render;
+// enganchar render correctamente
+const renderOriginalFinal = render;
 render = function(){
- oldRenderFinal();
- panelUbicacion();
+ renderOriginalFinal();
+ panelFinal();
 }
+
+// ejecutar al cargar
+setTimeout(()=>{
+ panelFinal();
+},500);
+
 </script>
 
 </body>
