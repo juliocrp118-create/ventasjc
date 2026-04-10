@@ -8,14 +8,16 @@
 body{
   font-family: Arial;
   margin:0;
-  background: linear-gradient(135deg,#1e3c72,#2a5298);
+  background-image: url('fondo.jpg');
+  background-size: cover;
+  background-position: center;
 }
 
 .overlay{
-  background:rgba(0,0,0,0.6);
+  background:rgba(0,0,0,0.65);
   min-height:100vh;
   padding:20px;
-  color:white
+  color:white;
 }
 
 input{
@@ -31,6 +33,7 @@ button{
   border:none;
   border-radius:8px;
   cursor:pointer;
+  font-weight:bold;
 }
 
 .agregar{background:#00c853;color:white}
@@ -45,7 +48,7 @@ button{
   padding:15px;
   margin:10px 0;
   border-radius:12px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.3)
+  box-shadow:0 4px 10px rgba(0,0,0,0.4);
 }
 
 .grid{
@@ -61,14 +64,19 @@ button{
  border-radius:12px;
  flex:1;
  text-align:center;
+ font-weight:bold;
+ box-shadow:0 4px 10px rgba(0,0,0,0.4);
 }
 
 .center{text-align:center;margin-top:20px}
+h2,h3{text-shadow:1px 1px 4px black}
 </style>
 
 </head>
+
 <body>
 
+<!-- LOGIN -->
 <div id="loginDiv" class="overlay">
 <h2>Login VentasJC</h2>
 <input id="user" placeholder="Usuario"><br>
@@ -76,6 +84,7 @@ button{
 <button onclick="login()">Entrar</button>
 </div>
 
+<!-- APP -->
 <div id="app" class="overlay" style="display:none;">
 
 <button class="logout" onclick="logout()">Cerrar sesión</button>
@@ -89,25 +98,25 @@ button{
 <button class="agregar" onclick="agregar()">Agregar</button>
 
 <div class="flex">
-<div class="col"><h3>Potes</h3><div id="potes"></div></div>
-<div class="col"><h3>Tinas</h3><div id="tinas"></div></div>
+<div class="col"><h3>Potes 1L</h3><div id="potes"></div></div>
+<div class="col"><h3>Tinas 4L</h3><div id="tinas"></div></div>
 </div>
 
-<!-- 🔥 NUEVAS COLUMNAS -->
+<!-- COLUMNAS -->
 <div class="grid">
   <div class="box">
-    <h3>Ganancias</h3>
-    <p id="ganancias">0</p>
+    💰 Ganancias<br>
+    <span id="ganancias">0</span>
   </div>
 
   <div class="box">
-    <h3>Inversión</h3>
-    <p id="inversion">0</p>
+    📦 Inversión<br>
+    <span id="inversion">0</span>
   </div>
 
   <div class="box">
-    <h3>Reinvertir</h3>
-    <p id="reinvertir">0</p>
+    🔄 Reinvertir<br>
+    <span id="reinvertir">0</span>
   </div>
 </div>
 
@@ -119,6 +128,7 @@ button{
 
 </div>
 
+<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
@@ -135,9 +145,9 @@ const db = firebase.firestore();
 
 let productos = [];
 let conteoData = {potes:0,tinas:0};
-let ganancias = 0;
-let inversion = 0;
-let reinvertir = 0;
+let totalGanancias = 0;
+let totalInversion = 0;
+let totalReinvertir = 0;
 
 // LOGIN
 function login(){
@@ -148,7 +158,7 @@ function login(){
    loginDiv.style.display = "none";
    app.style.display = "block";
  } else {
-   alert("Error");
+   alert("Usuario o contraseña incorrecta");
  }
 }
 
@@ -181,6 +191,7 @@ db.collection("productos").onSnapshot(snapshot=>{
  render();
 });
 
+// VENDER
 function vender(id,i){
  if(productos[i].stock<=0)return;
 
@@ -190,26 +201,33 @@ function vender(id,i){
    stock:p.stock-1
  });
 
- ganancias += (p.precio - p.costo);
- inversion += p.costo;
- reinvertir += p.costo;
+ let ganancia = p.precio - p.costo;
+
+ totalGanancias += ganancia;
+ totalInversion += p.costo;
+ totalReinvertir += p.costo;
 
  if(p.tipo=="pote") conteoData.potes++;
  else conteoData.tinas++;
+
+ render();
 }
 
+// ELIMINAR
 function eliminar(id){
  db.collection("productos").doc(id).delete();
 }
 
+// REINICIAR
 function reiniciar(){
  conteoData={potes:0,tinas:0};
- ganancias=0;
- inversion=0;
- reinvertir=0;
+ totalGanancias=0;
+ totalInversion=0;
+ totalReinvertir=0;
  render();
 }
 
+// RENDER
 function render(){
  let pHTML="",tHTML="";
 
@@ -229,11 +247,11 @@ function render(){
  tinas.innerHTML=tHTML;
 
  conteoTexto.innerHTML =
- "Potes: "+conteoData.potes+"<br>Tinas: "+conteoData.tinas;
+ "Potes: "+conteoData.potes+" | Tinas: "+conteoData.tinas;
 
- document.getElementById("ganancias").innerText = ganancias;
- document.getElementById("inversion").innerText = inversion;
- document.getElementById("reinvertir").innerText = reinvertir;
+ document.getElementById("ganancias").innerText = totalGanancias;
+ document.getElementById("inversion").innerText = totalInversion;
+ document.getElementById("reinvertir").innerText = totalReinvertir;
 }
 
 </script>
