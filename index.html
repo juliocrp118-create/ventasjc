@@ -47,83 +47,14 @@ button { margin:5px;padding:8px;border:none;border-radius:5px;}
 </head>
 <body>
 
-<div id="loginDiv" class="login">
-  <div class="box">
-    <h2>Login VentasJC</h2>
-    <input id="user" placeholder="Usuario"><br>
-    <input id="pass" type="password" placeholder="Contraseña"><br>
-    <button onclick="login()">Entrar</button>
-  </div>
-</div>
+<div id="loginDiv" class="overlay">
+   precio:+precio.value,
+   tipo:+costo.value==850?"pote":"tina"
+ };
 
-<div id="app" class="hidden">
-<div class="overlay">
-
-<button class="logout" onclick="logout()">Cerrar sesión</button>
-
-<h2>VentasJC</h2>
-
-<input id="nombre" placeholder="Nombre">
-<input id="stock" placeholder="Stock">
-<input id="costo" placeholder="Costo">
-<input id="precio" placeholder="Precio">
-<button class="agregar" onclick="agregar()">Agregar</button>
-
-<div class="flex">
-<div class="col"><h3>Potes</h3><div id="potes"></div></div>
-<div class="col"><h3>Tinas</h3><div id="tinas"></div></div>
-</div>
-
-<div class="grid">
-<div class="box2"><h3>Ganancias</h3><div id="ganancias"></div></div>
-<div class="box2"><h3>Inversión</h3><div id="inversion"></div></div>
-<div class="box2"><h3>Reinvertir</h3><div id="reinvertir"></div></div>
-</div>
-
-<div class="center">
-  <div class="table">
-    <h3>Ventas</h3>
-    <p id="conteoTexto"></p>
-  </div>
-  <br>
-  <button onclick="reiniciar()">Reiniciar Conteo</button>
-</div>
-
-</div>
-</div>
-
-<script>
-let productos = JSON.parse(localStorage.getItem("productos")) || [];
-let ventas = JSON.parse(localStorage.getItem("ventas")) || [];
-let conteoData = JSON.parse(localStorage.getItem("conteo")) || {potes:0,tinas:0};
-
-function login(){
- if(user.value==="Julio" && pass.value==="1234*"){
-  loginDiv.classList.add("hidden");
-  app.classList.remove("hidden");
- } else alert("Error");
-}
-
-function logout(){
- app.classList.add("hidden");
- loginDiv.classList.remove("hidden");
-}
-
-function guardarProducto(producto){
-
-  db.collection("productos").add({
-    nombre: producto.nombre,
-    precio: producto.precio,
-    costo: producto.costo,
-    stock: producto.stock,
-    tipo: producto.tipo
-  });
-
-}
-
-function agregar(){
- productos.push({nombre:nombre.value,stock:+stock.value,costo:+costo.value,precio:+precio.value});
- guardar();render();
+ productos.push(nuevo);
+ guardarProducto(nuevo);
+ render();
 }
 
 function vender(i){
@@ -146,8 +77,10 @@ function editar(i){
 }
 
 function eliminar(i){
- if(confirm("Eliminar?"))productos.splice(i,1);
- guardar();render();
+ if(confirm("Eliminar?")){
+   let id = productos[i].id;
+   db.collection("productos").doc(id).delete();
+ }
 }
 
 function reiniciar(){
@@ -157,181 +90,40 @@ function reiniciar(){
  render();
 }
 
+// 🔥 TIEMPO REAL FIREBASE
+ db.collection("productos").onSnapshot(snapshot => {
+ productos = [];
+ snapshot.forEach(doc => {
+   let data = doc.data();
+   data.id = doc.id;
+   productos.push(data);
+ });
+ render();
+});
+
 function render(){
  let pHTML="",tHTML="";
- let gp=0,gt=0,ip=0,it=0,rp=0,rt=0;
+ let gp=0,gt=0;
 
  productos.forEach((p,i)=>{
  let card=`<div class='card'>
  ${p.nombre}<br>Stock:${p.stock}<br>
- <button class='vender' onclick='vender(${i})'>Vender</button>
- <button class='editar' onclick='editar(${i})'>Editar</button>
- <button class='eliminar' onclick='eliminar(${i})'>Eliminar</button>
+ <button onclick='vender(${i})'>Vender</button>
+ <button onclick='editar(${i})'>Editar</button>
+ <button onclick='eliminar(${i})'>Eliminar</button>
  </div>`;
- if(p.costo==850){pHTML+=card;ip+=p.stock*p.costo;}
- if(p.costo==2900){tHTML+=card;it+=p.stock*p.costo;}
- });
 
- ventas.forEach(v=>{
- let g=v.precio-v.costo;
- if(v.costo==850){gp+=g;rp+=v.costo;}
- if(v.costo==2900){gt+=g;rt+=v.costo;}
+ if(p.costo==850){pHTML+=card;}
+ if(p.costo==2900){tHTML+=card;}
  });
 
  potes.innerHTML=pHTML;
  tinas.innerHTML=tHTML;
- ganancias.innerHTML=`Potes:${gp}<br>Tinas:${gt}`;
- inversion.innerHTML=`Potes:${ip}<br>Tinas:${it}`;
- reinvertir.innerHTML=`Potes:${rp}<br>Tinas:${rt}`;
 
  document.getElementById("conteoTexto").innerHTML =
-   "Potes vendidos: " + conteoData.potes + "<br>Tinas vendidas: " + conteoData.tinas;
+ "Potes vendidos: " + conteoData.potes + "<br>Tinas vendidos: " + conteoData.tinas;
 }
-
-render();
-
-// === NUEVAS FUNCIONES SIN ROMPER NADA ===
-
-// recordar sesión (ya usa login existente)
-
-// ventas por fecha
-function obtenerHoy(){
- return new Date().toDateString();
-}
-
-function ventasHoy(){
- return ventas.filter(v=> new Date(v.fecha||Date.now()).toDateString()===obtenerHoy()).length;
-}
-
-function ventasMes(){
- let m=new Date().getMonth();
- return ventas.filter(v=> new Date(v.fecha||Date.now()).getMonth()===m).length;
-}
-
-// modificar vender para guardar fecha
-let _venderOriginal = vender;
-vender = function(i){
- if(productos[i].stock<=0)return;
- productos[i].stock--;
-
- let venta = {...productos[i], fecha:new Date().toISOString()};
- ventas.push(venta);
-
- if(productos[i].costo==850) conteoData.potes++;
- if(productos[i].costo==2900) conteoData.tinas++;
-
- guardar(); render();
-}
-
-// agregar info visual
-function extraInfo(){
- let div = document.getElementById("extraInfo");
- if(!div){
-   div=document.createElement("div");
-   div.id="extraInfo";
-   document.body.appendChild(div);
- }
-
- div.innerHTML = `
- <div style="position:fixed;bottom:10px;right:10px;background:white;padding:10px;border-radius:10px">
- 📅 Hoy: ${ventasHoy()}<br>
- 📆 Mes: ${ventasMes()}
- </div>`;
-}
-
-// extender render
-let _renderOriginal = render;
-render = function(){
- _renderOriginal();
- extraInfo();
-}
-
 </script>
 
-
-<!-- FIREBASE -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyDgTmtl4VoF2UahIDZGVwQ11TuayHv2eHw",
-  authDomain: "ventasjc-b1a1d.firebaseapp.com",
-  projectId: "ventasjc-b1a1d",
-  storageBucket: "ventasjc-b1a1d.firebasestorage.app",
-  messagingSenderId: "588313980184",
-  appId: "1:588313980184:web:049646248d97e81091026d"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-// ===== SINCRONIZACIÓN =====
-
-// cargar productos desde firebase
-async function cargarFirebase(){
- const snapshot = await db.collection("productos").get();
- productos = [];
- snapshot.forEach(doc=>{
-   productos.push(doc.data());
- });
- render();
-}
-
-// guardar productos en firebase
-async function guardarFirebase(){
- await db.collection("productos").doc("data").set({
-   lista: productos
- });
-}
-
-// sobreescribir guardar()
-let oldGuardar = guardar;
-guardar = function(){
- oldGuardar();
- db.collection("productos").doc("data").set({lista: productos});
-}
-
-// cargar al iniciar
-<script>
-db.collection("productos").doc("data")
-.onSnapshot((doc)=>{
-
- if(doc.exists){
-   productos = doc.data().lista || [];
- } else {
-   productos = [];
- }
-
- localStorage.setItem("productos", JSON.stringify(productos));
-
- render();
-
-});
-</script>
-
-<script>
-window.addEventListener("load", async ()=>{
-
- try {
-   const doc = await db.collection("productos").doc("data").get();
-
-   if(doc.exists){
-     productos = doc.data().lista || [];
-   } else {
-     productos = [];
-   }
-
-   // sincroniza con tu sistema
-   localStorage.setItem("productos", JSON.stringify(productos));
-
-   render();
-
- } catch(e){
-   console.log("Error cargando Firebase:", e);
- }
-
-});
-</script>
 </body>
 </html>
