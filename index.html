@@ -242,7 +242,6 @@ render = function(){
 
 </script>
 
-
 <!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -296,6 +295,28 @@ window.addEventListener("load", ()=>{
  });
 });
 </script>
+<script>
+window.addEventListener("load", async ()=>{
 
+ try {
+   const doc = await db.collection("productos").doc("data").get();
+
+   if(doc.exists){
+     productos = doc.data().lista || [];
+   } else {
+     productos = [];
+   }
+
+   // sincroniza con tu sistema
+   localStorage.setItem("productos", JSON.stringify(productos));
+
+   render();
+
+ } catch(e){
+   console.log("Error cargando Firebase:", e);
+ }
+
+});
+</script>
 </body>
 </html>
