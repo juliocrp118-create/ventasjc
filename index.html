@@ -124,9 +124,7 @@ const db = firebase.firestore();
 let productos=[];
 let conteoData={potes:0,tinas:0};
 
-// 🔥 VARIABLES CORRECTAS
 let gPotes=0, gTinas=0;
-let iPotes=0, iTinas=0;
 let rPotes=0, rTinas=0;
 let hPotes=0, hTinas=0;
 
@@ -146,7 +144,6 @@ function logout(){
  loginDiv.style.display="flex";
 }
 
-// 🔥 AGREGAR CORREGIDO
 function agregar(){
 
  let c = +costo.value;
@@ -158,7 +155,7 @@ function agregar(){
  }else if(c === 2900){
    tipo = "tina";
  }else{
-   alert("Costo inválido (usa 850 o 2900)");
+   alert("Costo inválido (850 o 2900)");
    return;
  }
 
@@ -192,13 +189,11 @@ function vender(id,i){
 
  if(p.tipo==="pote"){
   gPotes+=g;
-  iPotes+=p.costo;
   rPotes+=p.costo;
   hPotes+=p.precio;
   conteoData.potes++;
  }else{
   gTinas+=g;
-  iTinas+=p.costo;
   rTinas+=p.costo;
   hTinas+=p.precio;
   conteoData.tinas++;
@@ -221,26 +216,35 @@ function eliminar(id){
 function reiniciar(){
  conteoData={potes:0,tinas:0};
  gPotes=gTinas=0;
- iPotes=iTinas=0;
  rPotes=rTinas=0;
  hPotes=hTinas=0;
  render();
 }
 
 function render(){
+
  let pHTML="",tHTML="";
+ let invP=0, invT=0;
 
  productos.forEach((p,i)=>{
- let card=`<div class='card'>
- ${p.nombre}<br>
- Stock:${p.stock}<br>
- <button onclick="vender('${p.id}',${i})">Vender</button>
- <button onclick="editar('${p.id}',${i})">Editar</button>
- <button onclick="eliminar('${p.id}')">Eliminar</button>
- </div>`;
 
- if(p.tipo==="pote") pHTML+=card;
- else tHTML+=card;
+   // 🔥 inversión real por stock
+   if(p.tipo==="pote"){
+     invP += p.stock * p.costo;
+   }else{
+     invT += p.stock * p.costo;
+   }
+
+   let card=`<div class='card'>
+   ${p.nombre}<br>
+   Stock:${p.stock}<br>
+   <button onclick="vender('${p.id}',${i})">Vender</button>
+   <button onclick="editar('${p.id}',${i})">Editar</button>
+   <button onclick="eliminar('${p.id}')">Eliminar</button>
+   </div>`;
+
+   if(p.tipo==="pote") pHTML+=card;
+   else tHTML+=card;
  });
 
  potes.innerHTML=pHTML;
@@ -251,8 +255,8 @@ function render(){
  document.getElementById("gananciasPotes").innerText=gPotes;
  document.getElementById("gananciasTinas").innerText=gTinas;
 
- document.getElementById("inversionPotes").innerText=iPotes;
- document.getElementById("inversionTinas").innerText=iTinas;
+ document.getElementById("inversionPotes").innerText=invP;
+ document.getElementById("inversionTinas").innerText=invT;
 
  document.getElementById("reinvertirPotes").innerText=rPotes;
  document.getElementById("reinvertirTinas").innerText=rTinas;
