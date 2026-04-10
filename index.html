@@ -109,16 +109,29 @@ function logout(){
  loginDiv.classList.remove("hidden");
 }
 
-function guardarProducto(producto){
+function agregar(){
 
-  db.collection("productos").add({
-    nombre: producto.nombre,
-    precio: producto.precio,
-    costo: producto.costo,
-    stock: producto.stock,
-    tipo: producto.tipo
-  });
+ let nuevo = {
+   nombre: nombre.value,
+   stock: +stock.value,
+   costo: +costo.value,
+   precio: +precio.value,
+   tipo: (+costo.value)==850 ? "pote" : "tina"
+ };
 
+ console.log("Intentando guardar:", nuevo);
+
+ db.collection("productos").add(nuevo)
+   .then(()=>{
+     console.log("✅ Guardado correctamente en Firebase");
+     alert("Producto agregado");
+   })
+   .catch((error)=>{
+     console.error("❌ Error Firebase:", error);
+     alert("Error: " + error.message);
+   });
+
+}
 }
 
 
