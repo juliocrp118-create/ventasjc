@@ -240,29 +240,6 @@ render = function(){
  extraInfo();
 }
 
-
-// === MOSTRAR VENTAS SEPARADAS ===
-function mostrarVentasSeparadas(){
- let div = document.getElementById("ventasSeparadas");
- if(!div){
-   div=document.createElement("div");
-   div.id="ventasSeparadas";
-   div.style.position="fixed";
-   div.style.bottom="80px";
-   div.style.right="10px";
-   div.style.background="white";
-   div.style.padding="10px";
-   div.style.borderRadius="10px";
-   document.body.appendChild(div);
- }
-
-// extender render otra vez
-let __renderOriginal2 = render;
-render = function(){
- __renderOriginal2();
- mostrarVentasSeparadas();
-}
-
 </script>
 
 </body>
