@@ -243,48 +243,58 @@ render = function(){
 </script>
 
 
-<div id="panelFixed" style="position:fixed;bottom:10px;left:10px;background:white;padding:10px;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.2);z-index:9999">
-💰 Hoy: <span id="hoyCaja">0</span> CUP<br><br>
-<button onclick="exportar()">📤 Exportar Excel</button>
-</div>
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script>
-function actualizarCaja(){
- let hoy = new Date().toDateString();
- let total=0;
- if(typeof ventas !== 'undefined'){
-  ventas.forEach(v=>{
-   let f=new Date(v.fecha||Date.now()).toDateString();
-   if(f===hoy) total+=v.precio;
-  });
- }
- document.getElementById("hoyCaja").innerText = total;
+const firebaseConfig = {
+  apiKey: "AIzaSyDgTmtl4VoF2UahIDZGVwQ11TuayHv2eHw",
+  authDomain: "ventasjc-b1a1d.firebaseapp.com",
+  projectId: "ventasjc-b1a1d",
+  storageBucket: "ventasjc-b1a1d.firebasestorage.app",
+  messagingSenderId: "588313980184",
+  appId: "1:588313980184:web:049646248d97e81091026d"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ===== SINCRONIZACIÓN =====
+
+// cargar productos desde firebase
+async function cargarFirebase(){
+ const snapshot = await db.collection("productos").get();
+ productos = [];
+ snapshot.forEach(doc=>{
+   productos.push(doc.data());
+ });
+ render();
 }
 
-// actualizar cada segundo (seguro)
+// guardar productos en firebase
+async function guardarFirebase(){
+ await db.collection("productos").doc("data").set({
+   lista: productos
+ });
+}
 
-</script>
+// sobreescribir guardar()
+let oldGuardar = guardar;
+guardar = function(){
+ oldGuardar();
+ db.collection("productos").doc("data").set({lista: productos});
+}
 
-
-<script>
-// ocultar panel en login
-function togglePanel(){
- let panel = document.getElementById("panelFixed");
- let login = document.getElementById("loginDiv") || document.getElementById("login");
- if(panel && login){
-   if(!login.classList.contains("hidden")){
-     panel.style.display = "none";
-   } else {
-     panel.style.display = "block";
+// cargar al iniciar
+window.addEventListener("load", ()=>{
+ db.collection("productos").doc("data").get().then(doc=>{
+   if(doc.exists){
+     productos = doc.data().lista || [];
+     render();
    }
- }
-}
-
-// actualizar cada segundo
-setInterval(()=>{
- actualizarCaja();
- togglePanel();
-},1000);
+ });
+});
 </script>
 
 </body>
