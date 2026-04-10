@@ -262,7 +262,29 @@ function actualizarCaja(){
 }
 
 // actualizar cada segundo (seguro)
-setInterval(actualizarCaja,1000);
+
+</script>
+
+
+<script>
+// ocultar panel en login
+function togglePanel(){
+ let panel = document.getElementById("panelFixed");
+ let login = document.getElementById("loginDiv") || document.getElementById("login");
+ if(panel && login){
+   if(!login.classList.contains("hidden")){
+     panel.style.display = "none";
+   } else {
+     panel.style.display = "block";
+   }
+ }
+}
+
+// actualizar cada segundo
+setInterval(()=>{
+ actualizarCaja();
+ togglePanel();
+},1000);
 </script>
 
 </body>
