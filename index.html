@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>VentasJC</title>
-
 <style>
 body{
   font-family: Arial;
@@ -11,40 +10,31 @@ body{
   background: url('fondo.jpg') no-repeat center center fixed;
   background-size: cover;
 }
-
 .overlay{
   background:rgba(0,0,0,0.45);
   min-height:100vh;
   padding:20px;
   color:white;
 }
-
 #loginDiv{display:flex;justify-content:center;align-items:center}
-
 .login-box{
   background:rgba(0,0,0,0.6);
   padding:30px;
   border-radius:15px;
   text-align:center;
 }
-
 input{margin:5px;padding:10px;border-radius:8px;border:none}
 button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font-weight:bold}
 .agregar{background:#00c853;color:white}
 .logout{background:#ff5252;color:white;float:right}
-
 .flex{display:flex;gap:20px}
 .col{flex:1}
-
 .card{background:white;color:black;padding:15px;margin:10px 0;border-radius:12px}
-
 .grid{display:flex;gap:20px;margin-top:20px;flex-wrap:wrap;justify-content:center}
 .box{background:white;color:black;padding:15px;border-radius:12px;width:220px;text-align:center;font-weight:bold}
-
 .center{text-align:center;margin-top:20px}
 </style>
 </head>
-
 <body>
 
 <div id="loginDiv" class="overlay">
@@ -57,7 +47,6 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 </div>
 
 <div id="app" class="overlay" style="display:none;">
-
 <button class="logout" onclick="logout()">Cerrar sesión</button>
 
 <h2>VentasJC</h2>
@@ -74,6 +63,7 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 </div>
 
 <div class="grid">
+
   <div class="box">
     💰 Ganancias<br><br>
     Potes: <span id="gananciasPotes">0</span><br>
@@ -97,6 +87,14 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
     Potes: <span id="hoyPotes">0</span><br>
     Tinas: <span id="hoyTinas">0</span>
   </div>
+
+  <!-- 🔥 NUEVO BOX -->
+  <div class="box">
+    📦 Total Stock<br><br>
+    Potes: <span id="stockPotes">0</span><br>
+    Tinas: <span id="stockTinas">0</span>
+  </div>
+
 </div>
 
 <div class="center">
@@ -105,23 +103,21 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 <button onclick="reiniciar()">Reiniciar</button>
 
 <br><br>
+
 <button onclick="exportar()">📤 Exportar JSON</button>
 <input type="file" onchange="importar(event)">
 
 <br><br>
+
 <button onclick="exportarExcel()">📊 Exportar Excel</button>
 </div>
-
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-
-<!-- 🔥 LIBRERÍA EXCEL -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <script>
-
 const firebaseConfig = {
  apiKey: "AIzaSyDgTmtl4VoF2UahIDZGVwQ11TuayHv2eHw",
  authDomain: "ventasjc-b1a1d.firebaseapp.com",
@@ -133,7 +129,6 @@ const db = firebase.firestore();
 
 let productos=[];
 let conteoData={potes:0,tinas:0};
-
 let gPotes=0, gTinas=0;
 let rPotes=0, rTinas=0;
 let hPotes=0, hTinas=0;
@@ -154,9 +149,7 @@ function logout(){
  loginDiv.style.display="flex";
 }
 
-// 🔥 AGREGAR CON ORDEN
 function agregar(){
-
  let c = +costo.value;
  let tipo = "";
 
@@ -179,7 +172,6 @@ function agregar(){
  });
 }
 
-// 🔥 ORDENAR
 db.collection("productos")
 .orderBy("fecha","asc")
 .onSnapshot(snapshot=>{
@@ -233,7 +225,6 @@ function reiniciar(){
  render();
 }
 
-// 🔥 EXPORTAR JSON
 function exportar(){
  db.collection("productos").get().then(snapshot=>{
   let datos=[];
@@ -249,7 +240,6 @@ function exportar(){
  });
 }
 
-// 🔥 IMPORTAR JSON
 function importar(e){
  let archivo=e.target.files[0];
  if(!archivo)return;
@@ -265,11 +255,8 @@ function importar(e){
  lector.readAsText(archivo);
 }
 
-// 🔥 EXPORTAR EXCEL
 function exportarExcel(){
-
  db.collection("productos").get().then(snapshot=>{
-
   let datos=[];
 
   snapshot.forEach(doc=>{
@@ -286,8 +273,8 @@ function exportarExcel(){
 
   let hoja=XLSX.utils.json_to_sheet(datos);
   let libro=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(libro,hoja,"Productos");
 
+  XLSX.utils.book_append_sheet(libro,hoja,"Productos");
   XLSX.writeFile(libro,"productos.xlsx");
  });
 }
@@ -297,10 +284,18 @@ function render(){
  let pHTML="",tHTML="";
  let invP=0,invT=0;
 
+ // 🔥 NUEVO
+ let stockP=0, stockT=0;
+
  productos.forEach((p,i)=>{
 
-   if(p.tipo==="pote") invP+=p.stock*p.costo;
-   else invT+=p.stock*p.costo;
+   if(p.tipo==="pote"){
+     invP += p.stock*p.costo;
+     stockP += p.stock;
+   }else{
+     invT += p.stock*p.costo;
+     stockT += p.stock;
+   }
 
    let card=`
    <div class='card'>
@@ -331,6 +326,10 @@ function render(){
 
  hoyPotes.innerText=hPotes;
  hoyTinas.innerText=hTinas;
+
+ // 🔥 NUEVO
+ stockPotes.innerText = stockP;
+ stockTinas.innerText = stockT;
 }
 </script>
 
