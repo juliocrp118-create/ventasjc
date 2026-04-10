@@ -256,13 +256,6 @@ function mostrarVentasSeparadas(){
    document.body.appendChild(div);
  }
 
- div.innerHTML = `
- 🧾 Ventas:<br>
- 🥤 Potes: ${conteoData.potes}<br>
- 🪣 Tinas: ${conteoData.tinas}
- `;
-}
-
 // extender render otra vez
 let __renderOriginal2 = render;
 render = function(){
