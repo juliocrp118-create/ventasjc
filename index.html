@@ -240,6 +240,108 @@ render = function(){
  extraInfo();
 }
 
+
+// === NUEVAS FUNCIONES PRO SIN CAMBIAR DISEÑO ===
+
+let _venderPro = vender;
+vender = function(i){
+ if(productos[i].stock<=0)return;
+ productos[i].stock--;
+
+ let venta = {...productos[i], fecha:new Date().toISOString()};
+ ventas.push(venta);
+
+ if(productos[i].costo==850) conteoData.potes++;
+ if(productos[i].costo==2900) conteoData.tinas++;
+
+ guardar(); render();
+}
+
+function cajaDiaria(){
+ let hoy = new Date().toDateString();
+ let total=0;
+
+ ventas.forEach(v=>{
+  let f=new Date(v.fecha||Date.now()).toDateString();
+  if(f===hoy) total+=v.precio;
+ });
+
+ return total;
+}
+
+function reporteDias(){
+ let mapa={};
+ ventas.forEach(v=>{
+  let d=new Date(v.fecha||Date.now()).toLocaleDateString();
+  mapa[d]=(mapa[d]||0)+v.precio;
+ });
+ return mapa;
+}
+
+function grafica(){
+ let canvas=document.getElementById("graficaVentas");
+ if(!canvas){
+  canvas=document.createElement("canvas");
+  canvas.id="graficaVentas";
+  canvas.width=300;
+  canvas.height=150;
+  canvas.style.position="fixed";
+  canvas.style.bottom="10px";
+  canvas.style.left="10px";
+  canvas.style.background="white";
+  canvas.style.borderRadius="10px";
+  document.body.appendChild(canvas);
+ }
+
+ let ctx=canvas.getContext("2d");
+ ctx.clearRect(0,0,300,150);
+
+ let data=Object.values(reporteDias());
+ data.slice(-7).forEach((v,i)=>{
+  ctx.fillRect(i*40,150,30,-v/50);
+ });
+}
+
+function panelPro(){
+ let div=document.getElementById("panelPro");
+ if(!div){
+  div=document.createElement("div");
+  div.id="panelPro";
+  div.style.position="fixed";
+  div.style.top="10px";
+  div.style.right="10px";
+  div.style.background="white";
+  div.style.padding="10px";
+  div.style.borderRadius="10px";
+  document.body.appendChild(div);
+ }
+
+ div.innerHTML=`
+ 💰 Hoy: ${cajaDiaria()} CUP
+ `;
+}
+
+let _exportarPro = exportar;
+exportar = function(){
+ let csv="Producto,Precio,Costo,Fecha\n";
+ ventas.forEach(v=>{
+  csv+=`${v.nombre},${v.precio},${v.costo},${v.fecha||""}\n`;
+ });
+
+ let blob=new Blob([csv]);
+ let link=document.createElement("a");
+ link.href=URL.createObjectURL(blob);
+ link.download="reporte_ventas.csv";
+ link.click();
+}
+
+let _renderPro = render;
+render = function(){
+ _renderPro();
+ panelPro();
+ grafica();
+}
+
 </script>
 
 </body>
