@@ -359,5 +359,37 @@ render = function(){
 }
 </script>
 
+
+<script>
+// mover exportar y caja juntos abajo izquierda
+function panelUbicacion(){
+ let div=document.getElementById("panelFinal");
+ if(!div){
+  div=document.createElement("div");
+  div.id="panelFinal";
+  div.style.position="fixed";
+  div.style.bottom="10px";
+  div.style.left="10px";
+  div.style.background="white";
+  div.style.padding="10px";
+  div.style.borderRadius="10px";
+  div.style.boxShadow="0 0 10px rgba(0,0,0,0.2)";
+  document.body.appendChild(div);
+ }
+
+ div.innerHTML = `
+ 💰 Hoy: ${cajaDiaria()} CUP<br><br>
+ <button onclick="exportar()">📤 Exportar Excel</button>
+ `;
+}
+
+// extender render
+let oldRenderFinal = render;
+render = function(){
+ oldRenderFinal();
+ panelUbicacion();
+}
+</script>
+
 </body>
 </html>
