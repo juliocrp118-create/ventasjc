@@ -19,6 +19,21 @@ body{
   color:white;
 }
 
+/* 🔥 LOGIN CENTRADO */
+#loginDiv{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.login-box{
+  background:rgba(0,0,0,0.6);
+  padding:30px;
+  border-radius:15px;
+  text-align:center;
+  box-shadow:0 5px 20px rgba(0,0,0,0.5);
+}
+
 input{
   margin:5px;
   padding:10px;
@@ -50,11 +65,20 @@ button{
   box-shadow:0 4px 10px rgba(0,0,0,0.4);
 }
 
+/* 🔥 SEPARACIÓN VISUAL */
+.col h3{
+  text-align:center;
+  background:rgba(255,255,255,0.2);
+  padding:10px;
+  border-radius:10px;
+}
+
 .grid{
  display:flex;
  gap:20px;
  margin-top:20px;
  flex-wrap:wrap;
+ justify-content:center;
 }
 
 .box{
@@ -62,7 +86,7 @@ button{
  color:black;
  padding:15px;
  border-radius:12px;
- flex:1;
+ width:200px;
  text-align:center;
  font-weight:bold;
  box-shadow:0 4px 10px rgba(0,0,0,0.4);
@@ -76,13 +100,17 @@ h2,h3{text-shadow:1px 1px 4px black}
 
 <body>
 
+<!-- LOGIN -->
 <div id="loginDiv" class="overlay">
-<h2>Login VentasJC</h2>
-<input id="user" placeholder="Usuario"><br>
-<input id="pass" type="password" placeholder="Contraseña"><br>
-<button onclick="login()">Entrar</button>
+  <div class="login-box">
+    <h2>Login VentasJC</h2>
+    <input id="user" placeholder="Usuario"><br>
+    <input id="pass" type="password" placeholder="Contraseña"><br>
+    <button onclick="login()">Entrar</button>
+  </div>
 </div>
 
+<!-- APP -->
 <div id="app" class="overlay" style="display:none;">
 
 <button class="logout" onclick="logout()">Cerrar sesión</button>
@@ -96,8 +124,8 @@ h2,h3{text-shadow:1px 1px 4px black}
 <button class="agregar" onclick="agregar()">Agregar</button>
 
 <div class="flex">
-<div class="col"><h3>Potes 1L</h3><div id="potes"></div></div>
-<div class="col"><h3>Tinas 4L</h3><div id="tinas"></div></div>
+<div class="col"><h3>🥤 Potes 1L</h3><div id="potes"></div></div>
+<div class="col"><h3>🪣 Tinas 4L</h3><div id="tinas"></div></div>
 </div>
 
 <div class="grid">
@@ -108,7 +136,7 @@ h2,h3{text-shadow:1px 1px 4px black}
 </div>
 
 <div class="center">
-<h3>Ventas</h3>
+<h3>📊 Ventas</h3>
 <p id="conteoTexto"></p>
 <button onclick="reiniciar()">Reiniciar Conteo</button>
 <button onclick="exportar()">Exportar Excel</button>
@@ -137,7 +165,6 @@ let totalInversion = 0;
 let totalReinvertir = 0;
 let cajaHoy = 0;
 
-// 🔥 cargar datos
 if(localStorage.getItem("datos")){
  let d = JSON.parse(localStorage.getItem("datos"));
  totalGanancias = d.ganancias || 0;
@@ -168,7 +195,7 @@ function login(){
 
 function logout(){
  app.style.display = "none";
- loginDiv.style.display = "block";
+ loginDiv.style.display = "flex";
 }
 
 function agregar(){
