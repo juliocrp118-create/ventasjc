@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>VentasJC SISTEMA FINAL</title>
+<title>VentasJC FINAL</title>
 
 <style>
 body{
@@ -19,11 +19,7 @@ body{
   color:white;
 }
 
-#loginDiv{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-}
+#loginDiv{display:flex;justify-content:center;align-items:center}
 
 .login-box{
   background:rgba(0,0,0,0.6);
@@ -47,8 +43,8 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 
 .center{text-align:center;margin-top:20px}
 </style>
-
 </head>
+
 <body>
 
 <div id="loginDiv" class="overlay">
@@ -107,7 +103,6 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 <h3>Ventas</h3>
 <p id="conteoTexto"></p>
 <button onclick="reiniciar()">Reiniciar</button>
-<button onclick="exportar()">Exportar Excel</button>
 </div>
 
 </div>
@@ -129,15 +124,20 @@ const db = firebase.firestore();
 let productos=[];
 let conteoData={potes:0,tinas:0};
 
-let gananciasPotes=0, gananciasTinas=0;
-let inversionPotes=0, inversionTinas=0;
-let reinvertirPotes=0, reinvertirTinas=0;
-let hoyPotes=0, hoyTinas=0;
+// 🔥 VARIABLES CORREGIDAS
+let gPotes=0, gTinas=0;
+let iPotes=0, iTinas=0;
+let rPotes=0, rTinas=0;
+let hPotes=0, hTinas=0;
 
 function login(){
- if(user.value==="Julio" && pass.value==="1234*"){
+ let u=document.getElementById("user").value.trim();
+ let p=document.getElementById("pass").value.trim();
+ if(u==="Julio" && p==="1234*"){
   loginDiv.style.display="none";
   app.style.display="block";
+ }else{
+  alert("Datos incorrectos");
  }
 }
 
@@ -160,8 +160,8 @@ function agregar(){
 db.collection("productos").onSnapshot(snapshot=>{
  productos=[];
  snapshot.forEach(doc=>{
-  let data=doc.data(); data.id=doc.id;
-  productos.push(data);
+  let d=doc.data(); d.id=doc.id;
+  productos.push(d);
  });
  render();
 });
@@ -175,25 +175,26 @@ function vender(id,i){
  let g=p.precio-p.costo;
 
  if(p.tipo==="pote"){
-  gananciasPotes+=g;
-  inversionPotes+=p.costo;
-  reinvertirPotes+=p.costo;
-  hoyPotes+=p.precio;
+  gPotes+=g;
+  iPotes+=p.costo;
+  rPotes+=p.costo;
+  hPotes+=p.precio;
   conteoData.potes++;
  }else{
-  gananciasTinas+=g;
-  inversionTinas+=p.costo;
-  reinvertirTinas+=p.costo;
-  hoyTinas+=p.precio;
+  gTinas+=g;
+  iTinas+=p.costo;
+  rTinas+=p.costo;
+  hTinas+=p.precio;
   conteoData.tinas++;
  }
+
  render();
 }
 
 function editar(id,i){
- let nuevo=prompt("Nuevo stock:",productos[i].stock);
- if(nuevo!==null){
-  db.collection("productos").doc(id).update({stock:+nuevo});
+ let n=prompt("Nuevo stock:",productos[i].stock);
+ if(n!==null){
+  db.collection("productos").doc(id).update({stock:+n});
  }
 }
 
@@ -203,29 +204,19 @@ function eliminar(id){
 
 function reiniciar(){
  conteoData={potes:0,tinas:0};
- gananciasPotes=gananciasTinas=0;
- inversionPotes=inversionTinas=0;
- reinvertirPotes=reinvertirTinas=0;
- hoyPotes=hoyTinas=0;
+ gPotes=gTinas=0;
+ iPotes=iTinas=0;
+ rPotes=rTinas=0;
+ hPotes=hTinas=0;
  render();
-}
-
-function exportar(){
- let data=[["Producto","Costo","Precio"]];
- productos.forEach(p=>data.push([p.nombre,p.costo,p.precio]));
- let csv=data.map(e=>e.join(",")).join("\n");
- let blob=new Blob([csv]);
- let a=document.createElement("a");
- a.href=URL.createObjectURL(blob);
- a.download="ventas.csv";
- a.click();
 }
 
 function render(){
  let pHTML="",tHTML="";
  productos.forEach((p,i)=>{
  let card=`<div class='card'>
- ${p.nombre}<br>Stock:${p.stock}<br>
+ ${p.nombre}<br>
+ Stock:${p.stock}<br>
  <button onclick="vender('${p.id}',${i})">Vender</button>
  <button onclick="editar('${p.id}',${i})">Editar</button>
  <button onclick="eliminar('${p.id}')">Eliminar</button>
@@ -235,17 +226,19 @@ function render(){
 
  potes.innerHTML=pHTML;
  tinas.innerHTML=tHTML;
-
  conteoTexto.innerHTML=`Potes:${conteoData.potes} | Tinas:${conteoData.tinas}`;
 
- gananciasPotes.innerText=gananciasPotes;
- gananciasTinas.innerText=gananciasTinas;
- inversionPotes.innerText=inversionPotes;
- inversionTinas.innerText=inversionTinas;
- reinvertirPotes.innerText=reinvertirPotes;
- reinvertirTinas.innerText=reinvertirTinas;
- hoyPotes.innerText=hoyPotes;
- hoyTinas.innerText=hoyTinas;
+ document.getElementById("gananciasPotes").innerText=gPotes;
+ document.getElementById("gananciasTinas").innerText=gTinas;
+
+ document.getElementById("inversionPotes").innerText=iPotes;
+ document.getElementById("inversionTinas").innerText=iTinas;
+
+ document.getElementById("reinvertirPotes").innerText=rPotes;
+ document.getElementById("reinvertirTinas").innerText=rTinas;
+
+ document.getElementById("hoyPotes").innerText=hPotes;
+ document.getElementById("hoyTinas").innerText=hTinas;
 }
 
 </script>
