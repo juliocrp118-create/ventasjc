@@ -39,20 +39,9 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 .card{background:white;color:black;padding:15px;margin:10px 0;border-radius:12px}
 
 .grid{display:flex;gap:20px;margin-top:20px;flex-wrap:wrap;justify-content:center}
-.box{
-  background:white;
-  color:black;
-  padding:15px;
-  border-radius:12px;
-  width:220px;
-  text-align:center;
-  font-weight:bold;
-  transition:0.3s;
-}
-.box:hover{
-  transform:scale(1.05);
-}
+.box{background:white;color:black;padding:15px;border-radius:12px;width:220px;text-align:center;font-weight:bold}
 
+.center{text-align:center;margin-top:20px}
 </style>
 </head>
 
@@ -85,7 +74,6 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 </div>
 
 <div class="grid">
-
   <div class="box">
     💰 Ganancias<br><br>
     Potes: <span id="gananciasPotes">0</span><br>
@@ -109,16 +97,11 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
     Potes: <span id="hoyPotes">0</span><br>
     Tinas: <span id="hoyTinas">0</span>
   </div>
-
-  <div class="box">
-    📊 Ventas<br><br>
-    🥤 Potes: <span id="ventasPotes">0</span><br>
-    🪣 Tinas: <span id="ventasTinas">0</span>
-  </div>
-
 </div>
 
-<div style="text-align:center;margin-top:20px;">
+<div class="center">
+<h3>Ventas</h3>
+<p id="conteoTexto"></p>
 <button onclick="reiniciar()">Reiniciar</button>
 </div>
 
@@ -146,8 +129,8 @@ let rPotes=0, rTinas=0;
 let hPotes=0, hTinas=0;
 
 function login(){
- let u=user.value.trim();
- let p=pass.value.trim();
+ let u=document.getElementById("user").value.trim();
+ let p=document.getElementById("pass").value.trim();
  if(u==="Julio" && p==="1234*"){
   loginDiv.style.display="none";
   app.style.display="block";
@@ -161,8 +144,8 @@ function logout(){
  loginDiv.style.display="flex";
 }
 
-// 🔥 AGREGAR CON FECHA
 function agregar(){
+
  let c = +costo.value;
  let tipo = "";
 
@@ -180,17 +163,30 @@ function agregar(){
   stock:+stock.value,
   costo:c,
   precio:+precio.value,
-  tipo:tipo,
-  fecha: Date.now() // 🔥 para ordenar
+  tipo:tipo
  };
 
  db.collection("productos").add(nuevo);
 }
 
-// 🔥 ORDENADO POR FECHA
 db.collection("productos")
-.orderBy("fecha","asc")
-.onSnapshot(snapshot=>{
+.onSnapshot(function(snapshot){
+
+ console.log("🔥 conectado a Firebase");
+
+ productos = [];
+
+ snapshot.forEach(function(doc){
+   let data = doc.data();
+   data.id = doc.id;
+   productos.push(data);
+ });
+
+ render();
+
+}, function(error){
+ console.error("❌ error Firebase:", error);
+});
  productos=[];
  snapshot.forEach(doc=>{
   let d=doc.data(); d.id=doc.id;
@@ -248,6 +244,7 @@ function render(){
 
  productos.forEach((p,i)=>{
 
+   // 🔥 INVERSIÓN REAL (SOLO STOCK)
    if(p.tipo==="pote"){
      invP += p.stock * p.costo;
    }else{
@@ -269,6 +266,8 @@ function render(){
  potes.innerHTML=pHTML;
  tinas.innerHTML=tHTML;
 
+ conteoTexto.innerHTML=`Potes:${conteoData.potes} | Tinas:${conteoData.tinas}`;
+
  document.getElementById("gananciasPotes").innerText=gPotes;
  document.getElementById("gananciasTinas").innerText=gTinas;
 
@@ -280,9 +279,6 @@ function render(){
 
  document.getElementById("hoyPotes").innerText=hPotes;
  document.getElementById("hoyTinas").innerText=hTinas;
-
- document.getElementById("ventasPotes").innerText=conteoData.potes;
- document.getElementById("ventasTinas").innerText=conteoData.tinas;
 }
 
 </script>
