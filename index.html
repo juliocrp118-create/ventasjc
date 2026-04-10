@@ -64,7 +64,7 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 
 <input id="nombre" placeholder="Nombre">
 <input id="stock" placeholder="Stock">
-<input id="costo" placeholder="Costo">
+<input id="costo" placeholder="Costo (850 o 2900)">
 <input id="precio" placeholder="Precio">
 <button class="agregar" onclick="agregar()">Agregar</button>
 
@@ -124,7 +124,7 @@ const db = firebase.firestore();
 let productos=[];
 let conteoData={potes:0,tinas:0};
 
-// 🔥 VARIABLES CORREGIDAS
+// 🔥 VARIABLES CORRECTAS
 let gPotes=0, gTinas=0;
 let iPotes=0, iTinas=0;
 let rPotes=0, rTinas=0;
@@ -146,14 +146,30 @@ function logout(){
  loginDiv.style.display="flex";
 }
 
+// 🔥 AGREGAR CORREGIDO
 function agregar(){
+
+ let c = +costo.value;
+
+ let tipo = "";
+
+ if(c === 850){
+   tipo = "pote";
+ }else if(c === 2900){
+   tipo = "tina";
+ }else{
+   alert("Costo inválido (usa 850 o 2900)");
+   return;
+ }
+
  let nuevo={
   nombre:nombre.value,
   stock:+stock.value,
-  costo:+costo.value,
+  costo:c,
   precio:+precio.value,
-  tipo:(+costo.value)==850?"pote":"tina"
+  tipo:tipo
  };
+
  db.collection("productos").add(nuevo);
 }
 
@@ -213,6 +229,7 @@ function reiniciar(){
 
 function render(){
  let pHTML="",tHTML="";
+
  productos.forEach((p,i)=>{
  let card=`<div class='card'>
  ${p.nombre}<br>
@@ -221,11 +238,14 @@ function render(){
  <button onclick="editar('${p.id}',${i})">Editar</button>
  <button onclick="eliminar('${p.id}')">Eliminar</button>
  </div>`;
- if(p.tipo==="pote") pHTML+=card; else tHTML+=card;
+
+ if(p.tipo==="pote") pHTML+=card;
+ else tHTML+=card;
  });
 
  potes.innerHTML=pHTML;
  tinas.innerHTML=tHTML;
+
  conteoTexto.innerHTML=`Potes:${conteoData.potes} | Tinas:${conteoData.tinas}`;
 
  document.getElementById("gananciasPotes").innerText=gPotes;
