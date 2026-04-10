@@ -241,9 +241,13 @@ function vender(id,i){
  let p = productos[i];
  db.collection("productos").doc(id).update({stock:p.stock-1});
  let ganancia = p.precio - p.costo;
- totalGanancias += ganancia;
- totalInversion += p.costo;
- totalReinvertir += p.costo;
+ let gananciasPotes = 0;
+let inversionPotes = 0;
+let reinvertirPotes = 0;
+
+let gananciasTinas = 0;
+let inversionTinas = 0;
+let reinvertirTinas = 0;
  cajaHoy += p.precio;
  if(p.tipo=="pote") conteoData.potes++;
  else conteoData.tinas++;
