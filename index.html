@@ -1,3 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>VentasJC</title>
+
+<style>
+body{
+  font-family: Arial;
+  margin:0;
+  background: url('fondo.jpg') no-repeat center center fixed;
+  background-size: cover;
+}
+
+.overlay{
+  background:rgba(0,0,0,0.45);
+  min-height:100vh;
+  padding:20px;
+  color:white;
+}
+
+#loginDiv{display:flex;justify-content:center;align-items:center}
+
+.login-box{
+  background:rgba(0,0,0,0.6);
+  padding:30px;
+  border-radius:15px;
+  text-align:center;
+}
+
+input{margin:5px;padding:10px;border-radius:8px;border:none}
+button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font-weight:bold}
+.agregar{background:#00c853;color:white}
+.logout{background:#ff5252;color:white;float:right}
+
+.flex{display:flex;gap:20px}
+.col{flex:1}
+
+.card{background:white;color:black;padding:15px;margin:10px 0;border-radius:12px}
+
+.grid{display:flex;gap:20px;margin-top:20px;flex-wrap:wrap;justify-content:center}
+.box{background:white;color:black;padding:15px;border-radius:12px;width:220px;text-align:center;font-weight:bold}
+
+.center{text-align:center;margin-top:20px}
+</style>
+</head>
+
+<body>
+
+<div id="loginDiv" class="overlay">
+  <div class="login-box">
+    <h2>Login VentasJC</h2>
+    <input id="user" placeholder="Usuario"><br>
+    <input id="pass" type="password" placeholder="Contraseña"><br>
+    <button onclick="login()">Entrar</button>
+  </div>
+</div>
+
+<div id="app" class="overlay" style="display:none;">
+
+<button class="logout" onclick="logout()">Cerrar sesión</button>
+
+<h2>VentasJC</h2>
+
+<input id="nombre" placeholder="Nombre">
+<input id="stock" placeholder="Stock">
+<input id="costo" placeholder="Costo (850 o 2900)">
+<input id="precio" placeholder="Precio">
+<button class="agregar" onclick="agregar()">Agregar</button>
+
+<div class="flex">
+<div class="col"><h3>Potes 1L</h3><div id="potes"></div></div>
+<div class="col"><h3>Tinas 4L</h3><div id="tinas"></div></div>
+</div>
+
+<div class="grid">
+  <div class="box">
+    💰 Ganancias<br><br>
+    Potes: <span id="gananciasPotes">0</span><br>
+    Tinas: <span id="gananciasTinas">0</span>
+  </div>
+
+  <div class="box">
+    📦 Inversión<br><br>
+    Potes: <span id="inversionPotes">0</span><br>
+    Tinas: <span id="inversionTinas">0</span>
+  </div>
+
+  <div class="box">
+    🔄 Reinvertir<br><br>
+    Potes: <span id="reinvertirPotes">0</span><br>
+    Tinas: <span id="reinvertirTinas">0</span>
+  </div>
+
+  <div class="box">
+    💵 Hoy<br><br>
+    Potes: <span id="hoyPotes">0</span><br>
+    Tinas: <span id="hoyTinas">0</span>
+  </div>
+</div>
+
+<div class="center">
+<h3>Ventas</h3>
+<p id="conteoTexto"></p>
+<button onclick="reiniciar()">Reiniciar</button>
+
+<br><br>
+<button onclick="exportar()">📤 Exportar JSON</button>
+<input type="file" onchange="importar(event)">
+
+<br><br>
+<button onclick="exportarExcel()">📊 Exportar Excel</button>
+</div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<!-- 🔥 LIBRERÍA EXCEL -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
 <script>
 
 const firebaseConfig = {
@@ -9,20 +131,13 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// 🔥 LOCAL STORAGE
-let productos = JSON.parse(localStorage.getItem("productos")) || [];
-
-function guardarLocal(){
- localStorage.setItem("productos", JSON.stringify(productos));
-}
-
+let productos=[];
 let conteoData={potes:0,tinas:0};
 
 let gPotes=0, gTinas=0;
 let rPotes=0, rTinas=0;
 let hPotes=0, hTinas=0;
 
-// LOGIN
 function login(){
  let u=user.value.trim();
  let p=pass.value.trim();
@@ -39,7 +154,7 @@ function logout(){
  loginDiv.style.display="flex";
 }
 
-// 🔥 AGREGAR
+// 🔥 AGREGAR CON ORDEN
 function agregar(){
 
  let c = +costo.value;
@@ -54,75 +169,33 @@ function agregar(){
    return;
  }
 
- let nuevo = {
-  id: Date.now().toString(), // 🔥 ID único
+ db.collection("productos").add({
   nombre:nombre.value,
   stock:+stock.value,
   costo:c,
   precio:+precio.value,
   tipo:tipo,
-  fecha:new Date()
- };
-
- // LOCAL
- productos.push(nuevo);
- guardarLocal();
- render();
-
- // FIREBASE
- if(navigator.onLine){
-   db.collection("productos").doc(nuevo.id).set({
-     ...nuevo,
-     fecha: firebase.firestore.FieldValue.serverTimestamp()
-   });
- }
-}
-
-// 🔥 SINCRONIZACIÓN (ARREGLADA)
-if(navigator.onLine){
- db.collection("productos")
- .orderBy("fecha","asc")
- .onSnapshot(snapshot=>{
-
-  let nube=[];
-
-  snapshot.forEach(doc=>{
-    let d=doc.data();
-    d.id=doc.id;
-
-    if(d.fecha && d.fecha.toDate){
-      d.fecha = d.fecha.toDate();
-    }
-
-    nube.push(d);
-  });
-
-  // 🔥 MEZCLA LOCAL + NUBE
-  let mapa = {};
-
-  [...productos, ...nube].forEach(p=>{
-    mapa[p.id] = p;
-  });
-
-  productos = Object.values(mapa);
-
-  guardarLocal();
-  render();
+  fecha: firebase.firestore.FieldValue.serverTimestamp()
  });
 }
 
-// 🔥 VENDER
+// 🔥 ORDENAR
+db.collection("productos")
+.orderBy("fecha","asc")
+.onSnapshot(snapshot=>{
+ productos=[];
+ snapshot.forEach(doc=>{
+  let d=doc.data(); d.id=doc.id;
+  productos.push(d);
+ });
+ render();
+});
+
 function vender(id,i){
  let p=productos[i];
  if(p.stock<=0)return;
 
- p.stock--;
-
- guardarLocal();
-
- if(navigator.onLine){
-  db.collection("productos").doc(p.id).update({stock:p.stock});
- }
+ db.collection("productos").doc(id).update({stock:p.stock-1});
 
  let g=p.precio-p.costo;
 
@@ -141,37 +214,17 @@ function vender(id,i){
  render();
 }
 
-// EDITAR
 function editar(id,i){
  let n=prompt("Nuevo stock:",productos[i].stock);
  if(n!==null){
-
-  productos[i].stock=+n;
-  guardarLocal();
-
-  if(navigator.onLine){
-    db.collection("productos").doc(productos[i].id).update({stock:+n});
-  }
-
-  render();
+  db.collection("productos").doc(id).update({stock:+n});
  }
 }
 
-// ELIMINAR
-function eliminar(id,i){
- let p=productos[i];
-
- productos.splice(i,1);
- guardarLocal();
-
- if(navigator.onLine){
-  db.collection("productos").doc(p.id).delete();
- }
-
- render();
+function eliminar(id){
+ db.collection("productos").doc(id).delete();
 }
 
-// REINICIAR
 function reiniciar(){
  conteoData={potes:0,tinas:0};
  gPotes=gTinas=0;
@@ -182,16 +235,21 @@ function reiniciar(){
 
 // 🔥 EXPORTAR JSON
 function exportar(){
- let archivo=new Blob([JSON.stringify(productos,null,2)],{type:"application/json"});
- let url=URL.createObjectURL(archivo);
+ db.collection("productos").get().then(snapshot=>{
+  let datos=[];
+  snapshot.forEach(doc=>datos.push(doc.data()));
 
- let a=document.createElement("a");
- a.href=url;
- a.download="productos.json";
- a.click();
+  let archivo=new Blob([JSON.stringify(datos,null,2)],{type:"application/json"});
+  let url=URL.createObjectURL(archivo);
+
+  let a=document.createElement("a");
+  a.href=url;
+  a.download="productos.json";
+  a.click();
+ });
 }
 
-// 🔥 IMPORTAR (ARREGLADO)
+// 🔥 IMPORTAR JSON
 function importar(e){
  let archivo=e.target.files[0];
  if(!archivo)return;
@@ -200,21 +258,8 @@ function importar(e){
 
  lector.onload=function(ev){
   let datos=JSON.parse(ev.target.result);
-
-  datos.forEach(p=>{
-    p.id = p.id || Date.now() + Math.random(); // 🔥 evita duplicados
-
-    productos.push(p);
-
-    if(navigator.onLine){
-      db.collection("productos").doc(p.id).set(p);
-    }
-  });
-
-  guardarLocal();
-  render();
-
-  alert("Importado correctamente");
+  datos.forEach(p=>db.collection("productos").add(p));
+  alert("Importado");
  };
 
  lector.readAsText(archivo);
@@ -223,25 +268,31 @@ function importar(e){
 // 🔥 EXPORTAR EXCEL
 function exportarExcel(){
 
- let datos=productos.map(p=>({
-   Nombre:p.nombre,
-   Stock:p.stock,
-   Costo:p.costo,
-   Precio:p.precio,
-   Tipo:p.tipo
- }));
+ db.collection("productos").get().then(snapshot=>{
 
- let hoja=XLSX.utils.json_to_sheet(datos);
- let libro=XLSX.utils.book_new();
- XLSX.utils.book_append_sheet(libro,hoja,"Productos");
+  let datos=[];
 
- XLSX.writeFile(libro,"productos.xlsx");
+  snapshot.forEach(doc=>{
+    let p=doc.data();
+
+    datos.push({
+      Nombre:p.nombre,
+      Stock:p.stock,
+      Costo:p.costo,
+      Precio:p.precio,
+      Tipo:p.tipo
+    });
+  });
+
+  let hoja=XLSX.utils.json_to_sheet(datos);
+  let libro=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(libro,hoja,"Productos");
+
+  XLSX.writeFile(libro,"productos.xlsx");
+ });
 }
 
-// 🔥 RENDER
 function render(){
-
- productos.sort((a,b)=>new Date(a.fecha)-new Date(b.fecha));
 
  let pHTML="",tHTML="";
  let invP=0,invT=0;
@@ -257,7 +308,7 @@ function render(){
    Stock:${p.stock}<br>
    <button onclick="vender('${p.id}',${i})">Vender</button>
    <button onclick="editar('${p.id}',${i})">Editar</button>
-   <button onclick="eliminar('${p.id}',${i})">Eliminar</button>
+   <button onclick="eliminar('${p.id}')">Eliminar</button>
    </div>`;
 
    if(p.tipo==="pote") pHTML+=card;
@@ -281,8 +332,7 @@ function render(){
  hoyPotes.innerText=hPotes;
  hoyTinas.innerText=hTinas;
 }
-
-// 🔥 INICIO
-render();
-
 </script>
+
+</body>
+</html>
