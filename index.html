@@ -39,9 +39,20 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 .card{background:white;color:black;padding:15px;margin:10px 0;border-radius:12px}
 
 .grid{display:flex;gap:20px;margin-top:20px;flex-wrap:wrap;justify-content:center}
-.box{background:white;color:black;padding:15px;border-radius:12px;width:220px;text-align:center;font-weight:bold}
+.box{
+  background:white;
+  color:black;
+  padding:15px;
+  border-radius:12px;
+  width:220px;
+  text-align:center;
+  font-weight:bold;
+  transition:0.3s;
+}
+.box:hover{
+  transform:scale(1.05);
+}
 
-.center{text-align:center;margin-top:20px}
 </style>
 </head>
 
@@ -74,6 +85,7 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 </div>
 
 <div class="grid">
+
   <div class="box">
     💰 Ganancias<br><br>
     Potes: <span id="gananciasPotes">0</span><br>
@@ -97,11 +109,17 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
     Potes: <span id="hoyPotes">0</span><br>
     Tinas: <span id="hoyTinas">0</span>
   </div>
+
+  <!-- 🔥 NUEVO CUADRO DE VENTAS -->
+  <div class="box">
+    📊 Ventas<br><br>
+    🥤 Potes: <span id="ventasPotes">0</span><br>
+    🪣 Tinas: <span id="ventasTinas">0</span>
+  </div>
+
 </div>
 
-<div class="center">
-<h3>Ventas</h3>
-<p id="conteoTexto"></p>
+<div style="text-align:center;margin-top:20px;">
 <button onclick="reiniciar()">Reiniciar</button>
 </div>
 
@@ -129,8 +147,8 @@ let rPotes=0, rTinas=0;
 let hPotes=0, hTinas=0;
 
 function login(){
- let u=document.getElementById("user").value.trim();
- let p=document.getElementById("pass").value.trim();
+ let u=user.value.trim();
+ let p=pass.value.trim();
  if(u==="Julio" && p==="1234*"){
   loginDiv.style.display="none";
   app.style.display="block";
@@ -145,7 +163,6 @@ function logout(){
 }
 
 function agregar(){
-
  let c = +costo.value;
  let tipo = "";
 
@@ -227,7 +244,6 @@ function render(){
 
  productos.forEach((p,i)=>{
 
-   // 🔥 INVERSIÓN REAL (SOLO STOCK)
    if(p.tipo==="pote"){
      invP += p.stock * p.costo;
    }else{
@@ -249,8 +265,6 @@ function render(){
  potes.innerHTML=pHTML;
  tinas.innerHTML=tHTML;
 
- conteoTexto.innerHTML=`Potes:${conteoData.potes} | Tinas:${conteoData.tinas}`;
-
  document.getElementById("gananciasPotes").innerText=gPotes;
  document.getElementById("gananciasTinas").innerText=gTinas;
 
@@ -262,6 +276,9 @@ function render(){
 
  document.getElementById("hoyPotes").innerText=hPotes;
  document.getElementById("hoyTinas").innerText=hTinas;
+
+ document.getElementById("ventasPotes").innerText=conteoData.potes;
+ document.getElementById("ventasTinas").innerText=conteoData.tinas;
 }
 
 </script>
