@@ -104,16 +104,21 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 <p id="conteoTexto"></p>
 <button onclick="reiniciar()">Reiniciar</button>
 
-<!-- 🔥 NUEVOS BOTONES -->
 <br><br>
-<button onclick="exportar()">📤 Exportar</button>
+<button onclick="exportar()">📤 Exportar JSON</button>
 <input type="file" onchange="importar(event)">
+
+<br><br>
+<button onclick="exportarExcel()">📊 Exportar Excel</button>
 </div>
 
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<!-- 🔥 LIBRERÍA EXCEL -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <script>
 
@@ -134,8 +139,8 @@ let rPotes=0, rTinas=0;
 let hPotes=0, hTinas=0;
 
 function login(){
- let u=document.getElementById("user").value.trim();
- let p=document.getElementById("pass").value.trim();
+ let u=user.value.trim();
+ let p=pass.value.trim();
  if(u==="Julio" && p==="1234*"){
   loginDiv.style.display="none";
   app.style.display="block";
@@ -228,58 +233,77 @@ function reiniciar(){
  render();
 }
 
-// 🔥 EXPORTAR
+// 🔥 EXPORTAR JSON
 function exportar(){
  db.collection("productos").get().then(snapshot=>{
   let datos=[];
-  snapshot.forEach(doc=>{
-   datos.push(doc.data());
-  });
+  snapshot.forEach(doc=>datos.push(doc.data()));
 
   let archivo=new Blob([JSON.stringify(datos,null,2)],{type:"application/json"});
   let url=URL.createObjectURL(archivo);
 
   let a=document.createElement("a");
   a.href=url;
-  a.download="productos_backup.json";
+  a.download="productos.json";
   a.click();
  });
 }
 
-// 🔥 IMPORTAR
-function importar(event){
- let archivo=event.target.files[0];
+// 🔥 IMPORTAR JSON
+function importar(e){
+ let archivo=e.target.files[0];
  if(!archivo)return;
 
  let lector=new FileReader();
 
- lector.onload=function(e){
-  let datos=JSON.parse(e.target.result);
-
-  datos.forEach(p=>{
-   db.collection("productos").add(p);
-  });
-
-  alert("Datos importados");
+ lector.onload=function(ev){
+  let datos=JSON.parse(ev.target.result);
+  datos.forEach(p=>db.collection("productos").add(p));
+  alert("Importado");
  };
 
  lector.readAsText(archivo);
 }
 
+// 🔥 EXPORTAR EXCEL
+function exportarExcel(){
+
+ db.collection("productos").get().then(snapshot=>{
+
+  let datos=[];
+
+  snapshot.forEach(doc=>{
+    let p=doc.data();
+
+    datos.push({
+      Nombre:p.nombre,
+      Stock:p.stock,
+      Costo:p.costo,
+      Precio:p.precio,
+      Tipo:p.tipo
+    });
+  });
+
+  let hoja=XLSX.utils.json_to_sheet(datos);
+  let libro=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(libro,hoja,"Productos");
+
+  XLSX.writeFile(libro,"productos.xlsx");
+ });
+}
+
 function render(){
 
  let pHTML="",tHTML="";
- let invP=0, invT=0;
+ let invP=0,invT=0;
 
  productos.forEach((p,i)=>{
 
-   if(p.tipo==="pote"){
-     invP += p.stock * p.costo;
-   }else{
-     invT += p.stock * p.costo;
-   }
+   if(p.tipo==="pote") invP+=p.stock*p.costo;
+   else invT+=p.stock*p.costo;
 
-   let card=`<div class='card'>
+   let card=`
+   <div class='card'>
    ${p.nombre}<br>
    Stock:${p.stock}<br>
    <button onclick="vender('${p.id}',${i})">Vender</button>
@@ -296,19 +320,18 @@ function render(){
 
  conteoTexto.innerHTML=`Potes:${conteoData.potes} | Tinas:${conteoData.tinas}`;
 
- document.getElementById("gananciasPotes").innerText=gPotes;
- document.getElementById("gananciasTinas").innerText=gTinas;
+ gananciasPotes.innerText=gPotes;
+ gananciasTinas.innerText=gTinas;
 
- document.getElementById("inversionPotes").innerText=invP;
- document.getElementById("inversionTinas").innerText=invT;
+ inversionPotes.innerText=invP;
+ inversionTinas.innerText=invT;
 
- document.getElementById("reinvertirPotes").innerText=rPotes;
- document.getElementById("reinvertirTinas").innerText=rTinas;
+ reinvertirPotes.innerText=rPotes;
+ reinvertirTinas.innerText=rTinas;
 
- document.getElementById("hoyPotes").innerText=hPotes;
- document.getElementById("hoyTinas").innerText=hTinas;
+ hoyPotes.innerText=hPotes;
+ hoyTinas.innerText=hTinas;
 }
-
 </script>
 
 </body>
