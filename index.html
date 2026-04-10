@@ -12,8 +12,11 @@ h2 { color:#0d6efd; }
 button { margin:3px; padding:6px 10px; border:none; border-radius:5px; cursor:pointer;}
 .vender{ background:#28a745; color:white;}
 .editar{ background:#ffc107; color:black;}
+.eliminar{ background:#dc3545; color:white;}
 .agregar{ background:#0d6efd; color:white;}
 input { margin:5px; padding:5px;}
+.grid { display:flex; gap:20px; margin-top:20px;}
+.box { background:white; padding:10px; border-radius:10px; flex:1;}
 </style>
 </head>
 <body>
@@ -40,8 +43,20 @@ input { margin:5px; padding:5px;}
   </div>
 </div>
 
-<h3>Ganancias</h3>
-<div id="ganancias"></div>
+<div class="grid">
+  <div class="box">
+    <h3>Ganancias</h3>
+    <div id="ganancias"></div>
+  </div>
+  <div class="box">
+    <h3>Inversión</h3>
+    <div id="inversion"></div>
+  </div>
+  <div class="box">
+    <h3>Dinero para Invertir</h3>
+    <div id="reinvertir"></div>
+  </div>
+</div>
 
 <script>
 let productos = JSON.parse(localStorage.getItem("productos")) || [];
@@ -76,9 +91,17 @@ function editarStock(i){
  guardar(); render();
 }
 
+function eliminar(i){
+ if(!confirm("Eliminar producto?")) return;
+ productos.splice(i,1);
+ guardar(); render();
+}
+
 function render(){
  let potesHTML="", tinasHTML="";
  let gananciaPotes=0, gananciaTinas=0;
+ let inversionPotes=0, inversionTinas=0;
+ let reinvertirPotes=0, reinvertirTinas=0;
 
  productos.forEach((p,i)=>{
   let card = `
@@ -87,20 +110,29 @@ function render(){
   Stock:${p.stock}<br>
   Ganancia unidad:${p.precio-p.costo}<br>
   <button class='vender' onclick='vender(${i})'>Vender</button>
-  <button class='editar' onclick='editarStock(${i})'>Editar Stock</button>
+  <button class='editar' onclick='editarStock(${i})'>Editar</button>
+  <button class='eliminar' onclick='eliminar(${i})'>Eliminar</button>
   </div>`;
 
   if(p.costo==850){
     potesHTML+=card;
+    inversionPotes += p.stock * p.costo;
   } else if(p.costo==2900){
     tinasHTML+=card;
+    inversionTinas += p.stock * p.costo;
   }
  });
 
  ventas.forEach(v=>{
   let g=v.precio-v.costo;
-  if(v.costo==850) gananciaPotes+=g;
-  if(v.costo==2900) gananciaTinas+=g;
+  if(v.costo==850){
+    gananciaPotes+=g;
+    reinvertirPotes+=v.costo;
+  }
+  if(v.costo==2900){
+    gananciaTinas+=g;
+    reinvertirTinas+=v.costo;
+  }
  });
 
  document.getElementById("potes").innerHTML=potesHTML;
@@ -108,6 +140,12 @@ function render(){
 
  document.getElementById("ganancias").innerHTML=
   "Potes: "+gananciaPotes+" CUP<br>Tinas: "+gananciaTinas+" CUP";
+
+ document.getElementById("inversion").innerHTML=
+  "Potes: "+inversionPotes+" CUP<br>Tinas: "+inversionTinas+" CUP";
+
+ document.getElementById("reinvertir").innerHTML=
+  "Potes: "+reinvertirPotes+" CUP<br>Tinas: "+reinvertirTinas+" CUP";
 }
 
 render();
