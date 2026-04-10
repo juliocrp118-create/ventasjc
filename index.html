@@ -319,5 +319,72 @@ render = function(){
 }
 </script>
 
+
+<script>
+// === AJUSTES VISUALES ===
+
+// mover caja diaria al centro abajo
+function panelPro(){
+ let div=document.getElementById("panelPro");
+ if(!div){
+  div=document.createElement("div");
+  div.id="panelPro";
+  div.style.position="fixed";
+  div.style.bottom="10px";
+  div.style.left="50%";
+  div.style.transform="translateX(-50%)";
+  div.style.background="white";
+  div.style.padding="10px";
+  div.style.borderRadius="10px";
+  div.style.boxShadow="0 0 10px rgba(0,0,0,0.2)";
+  document.body.appendChild(div);
+ }
+ div.innerHTML="💰 Hoy: "+cajaDiaria()+" CUP";
+}
+
+// arreglar gráfica (quitar mancha negra)
+function grafica(){
+ let canvas=document.getElementById("graficaVentas");
+ if(!canvas){
+  canvas=document.createElement("canvas");
+  canvas.id="graficaVentas";
+  canvas.width=300;
+  canvas.height=150;
+  canvas.style.position="fixed";
+  canvas.style.bottom="80px";
+  canvas.style.left="10px";
+  canvas.style.background="white";
+  canvas.style.borderRadius="10px";
+  document.body.appendChild(canvas);
+ }
+
+ let ctx=canvas.getContext("2d");
+ ctx.clearRect(0,0,300,150);
+
+ let data={};
+ ventas.forEach(v=>{
+  let d=new Date(v.fecha||Date.now()).toLocaleDateString();
+  data[d]=(data[d]||0)+v.precio;
+ });
+
+ let vals=Object.values(data).slice(-7);
+
+ vals.forEach((v,i)=>{
+  let altura = v/50;
+  if(altura>140) altura=140;
+  ctx.fillStyle="black";
+  ctx.fillRect(i*40,150,30,-altura);
+ });
+}
+
+// re-render seguro
+let oldRender2 = render;
+render = function(){
+ oldRender2();
+ panelPro();
+ grafica();
+}
+</script>
+
 </body>
 </html>
