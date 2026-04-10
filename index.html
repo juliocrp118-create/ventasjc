@@ -237,10 +237,39 @@ function vender(id,i){
  }
 
  render();
+});
+
+ let ganancia = p.precio - p.costo;
+
+ if(p.tipo==="pote"){
+   gananciasPotes += ganancia;
+   inversionPotes += p.costo;
+   reinvertirPotes += p.costo;
+   hoyPotes += p.precio;
+   conteoData.potes++;
+ }else{
+   gananciasTinas += ganancia;
+   inversionTinas += p.costo;
+   reinvertirTinas += p.costo;
+   hoyTinas += p.precio;
+   conteoData.tinas++;
+ }
+
+ render();
 }
 
 function eliminar(id){
  db.collection("productos").doc(id).delete();
+}
+
+// 🔥 EDITAR PRODUCTO
+function editar(id,i){
+ let nuevoStock = prompt("Nuevo stock:", productos[i].stock);
+ if(nuevoStock===null) return;
+
+ db.collection("productos").doc(id).update({
+   stock: +nuevoStock
+ });
 }
 
 function reiniciar(){
@@ -264,6 +293,7 @@ function render(){
  ${p.nombre}<br>
  Stock:${p.stock}<br>
  <button onclick="vender('${p.id}',${i})">Vender</button>
+ <button onclick="editar('${p.id}',${i})">Editar</button>
  <button onclick="eliminar('${p.id}')">Eliminar</button>
  </div>`;
 
