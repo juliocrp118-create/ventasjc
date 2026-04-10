@@ -243,166 +243,26 @@ render = function(){
 </script>
 
 
-<script>
-// ===== FUNCIONES PRO =====
+<div id="panelFixed" style="position:fixed;bottom:10px;left:10px;background:white;padding:10px;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.2);z-index:9999">
+💰 Hoy: <span id="hoyCaja">0</span> CUP<br><br>
+<button onclick="exportar()">📤 Exportar Excel</button>
+</div>
 
-function cajaDiaria(){
+<script>
+function actualizarCaja(){
  let hoy = new Date().toDateString();
  let total=0;
- ventas.forEach(v=>{
-  let f=new Date(v.fecha||Date.now()).toDateString();
-  if(f===hoy) total+=v.precio;
- });
- return total;
-}
-
-
- let ctx=canvas.getContext("2d");
- ctx.clearRect(0,0,300,150);
-
- let data={};
- ventas.forEach(v=>{
-  let d=new Date(v.fecha||Date.now()).toLocaleDateString();
-  data[d]=(data[d]||0)+v.precio;
- });
-
- let vals=Object.values(data).slice(-7);
- vals.forEach((v,i)=>{
-  ctx.fillRect(i*40,150,30,-v/50);
- });
-}
-
-function panelPro(){
- let div=document.getElementById("panelPro");
- if(!div){
-  div=document.createElement("div");
-  div.id="panelPro";
-  div.style.position="fixed";
-  div.style.top="10px";
-  div.style.right="10px";
-  div.style.background="white";
-  div.style.padding="10px";
-  document.body.appendChild(div);
+ if(typeof ventas !== 'undefined'){
+  ventas.forEach(v=>{
+   let f=new Date(v.fecha||Date.now()).toDateString();
+   if(f===hoy) total+=v.precio;
+  });
  }
- div.innerHTML="💰 Hoy: "+cajaDiaria()+" CUP";
+ document.getElementById("hoyCaja").innerText = total;
 }
 
-// parche vender (guardar fecha)
-let oldVender = vender;
-vender = function(i){
- oldVender(i);
- if(ventas.length>0){
-  ventas[ventas.length-1].fecha=new Date().toISOString();
-  guardar();
- }
-}
-
-// extender render
-let oldRender = render;
-render = function(){
- oldRender();
- panelPro();
- 
-}
-</script>
-
-
-<script>
-// === AJUSTES VISUALES ===
-
-// mover caja diaria al centro abajo
-function panelPro(){
- let div=document.getElementById("panelPro");
- if(!div){
-  div=document.createElement("div");
-  div.id="panelPro";
-  div.style.position="fixed";
-  div.style.bottom="10px";
-  div.style.left="50%";
-  div.style.transform="translateX(-50%)";
-  div.style.background="white";
-  div.style.padding="10px";
-  div.style.borderRadius="10px";
-  div.style.boxShadow="0 0 10px rgba(0,0,0,0.2)";
-  document.body.appendChild(div);
- }
- div.innerHTML="💰 Hoy: "+cajaDiaria()+" CUP";
-}
-
-// arreglar gráfica (quitar mancha negra)
-
- let ctx=canvas.getContext("2d");
- ctx.clearRect(0,0,300,150);
-
- let data={};
- ventas.forEach(v=>{
-  let d=new Date(v.fecha||Date.now()).toLocaleDateString();
-  data[d]=(data[d]||0)+v.precio;
- });
-
- let vals=Object.values(data).slice(-7);
-
- vals.forEach((v,i)=>{
-  let altura = v/50;
-  if(altura>140) altura=140;
-  ctx.fillStyle="black";
-  ctx.fillRect(i*40,150,30,-altura);
- });
-}
-
-// re-render seguro
-let oldRender2 = render;
-render = function(){
- oldRender2();
- panelPro();
- 
-}
-</script>
-
-
-<script>
-// asegurar funciones necesarias
-function cajaDiaria(){
- let hoy = new Date().toDateString();
- let total=0;
- ventas.forEach(v=>{
-  let f=new Date(v.fecha||Date.now()).toDateString();
-  if(f===hoy) total+=v.precio;
- });
- return total;
-}
-
-// panel abajo izquierda
-function panelFinal(){
- let div=document.getElementById("panelFinal");
- if(!div){
-  div=document.createElement("div");
-  div.id="panelFinal";
-  div.style.position="fixed";
-  div.style.bottom="10px";
-  div.style.left="10px";
-  div.style.background="white";
-  div.style.padding="10px";
-  div.style.borderRadius="10px";
-  div.style.boxShadow="0 0 10px rgba(0,0,0,0.2)";
-  document.body.appendChild(div);
- }
-
- div.innerHTML = "💰 Hoy: "+cajaDiaria()+" CUP<br><br><button onclick='exportar()'>📤 Exportar Excel</button>";
-}
-
-// enganchar render correctamente
-const renderOriginalFinal = render;
-render = function(){
- renderOriginalFinal();
- panelFinal();
-}
-
-// ejecutar al cargar
-setTimeout(()=>{
- panelFinal();
-},500);
-
+// actualizar cada segundo (seguro)
+setInterval(actualizarCaja,1000);
 </script>
 
 </body>
