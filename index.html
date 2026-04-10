@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>VentasJC PRO</title>
+<title>VentasJC SISTEMA FINAL</title>
 
 <style>
 body{
@@ -32,61 +32,18 @@ body{
   text-align:center;
 }
 
-input{
-  margin:5px;
-  padding:10px;
-  border-radius:8px;
-  border:none;
-}
-
-button{
-  padding:10px;
-  margin:5px;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-  font-weight:bold;
-}
-
+input{margin:5px;padding:10px;border-radius:8px;border:none}
+button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font-weight:bold}
 .agregar{background:#00c853;color:white}
 .logout{background:#ff5252;color:white;float:right}
 
 .flex{display:flex;gap:20px}
 .col{flex:1}
 
-.card{
-  background:white;
-  color:black;
-  padding:15px;
-  margin:10px 0;
-  border-radius:12px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.4);
-}
+.card{background:white;color:black;padding:15px;margin:10px 0;border-radius:12px}
 
-.col h3{
-  text-align:center;
-  background:rgba(255,255,255,0.2);
-  padding:10px;
-  border-radius:10px;
-}
-
-.grid{
- display:flex;
- gap:20px;
- margin-top:20px;
- flex-wrap:wrap;
- justify-content:center;
-}
-
-.box{
- background:white;
- color:black;
- padding:15px;
- border-radius:12px;
- width:220px;
- text-align:center;
- font-weight:bold;
-}
+.grid{display:flex;gap:20px;margin-top:20px;flex-wrap:wrap;justify-content:center}
+.box{background:white;color:black;padding:15px;border-radius:12px;width:220px;text-align:center;font-weight:bold}
 
 .center{text-align:center;margin-top:20px}
 </style>
@@ -107,7 +64,7 @@ button{
 
 <button class="logout" onclick="logout()">Cerrar sesión</button>
 
-<h2>VentasJC PRO</h2>
+<h2>VentasJC FINAL</h2>
 
 <input id="nombre" placeholder="Nombre">
 <input id="stock" placeholder="Stock">
@@ -116,40 +73,41 @@ button{
 <button class="agregar" onclick="agregar()">Agregar</button>
 
 <div class="flex">
-<div class="col"><h3>🥤 Potes 1L</h3><div id="potes"></div></div>
-<div class="col"><h3>🪣 Tinas 4L</h3><div id="tinas"></div></div>
+<div class="col"><h3>Potes 1L</h3><div id="potes"></div></div>
+<div class="col"><h3>Tinas 4L</h3><div id="tinas"></div></div>
 </div>
 
 <div class="grid">
   <div class="box">
     💰 Ganancias<br><br>
-    🥤 <span id="gananciasPotes">0</span><br>
-    🪣 <span id="gananciasTinas">0</span>
+    Potes: <span id="gananciasPotes">0</span><br>
+    Tinas: <span id="gananciasTinas">0</span>
   </div>
 
   <div class="box">
     📦 Inversión<br><br>
-    🥤 <span id="inversionPotes">0</span><br>
-    🪣 <span id="inversionTinas">0</span>
+    Potes: <span id="inversionPotes">0</span><br>
+    Tinas: <span id="inversionTinas">0</span>
   </div>
 
   <div class="box">
     🔄 Reinvertir<br><br>
-    🥤 <span id="reinvertirPotes">0</span><br>
-    🪣 <span id="reinvertirTinas">0</span>
+    Potes: <span id="reinvertirPotes">0</span><br>
+    Tinas: <span id="reinvertirTinas">0</span>
   </div>
 
   <div class="box">
     💵 Hoy<br><br>
-    🥤 <span id="hoyPotes">0</span><br>
-    🪣 <span id="hoyTinas">0</span>
+    Potes: <span id="hoyPotes">0</span><br>
+    Tinas: <span id="hoyTinas">0</span>
   </div>
 </div>
 
 <div class="center">
 <h3>Ventas</h3>
 <p id="conteoTexto"></p>
-<button onclick="reiniciar()">Reiniciar Conteo</button>
+<button onclick="reiniciar()">Reiniciar</button>
+<button onclick="exportar()">Exportar Excel</button>
 </div>
 
 </div>
@@ -160,25 +118,21 @@ button{
 <script>
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDgTmtl4VoF2UahIDZGVwQ11TuayHv2eHw",
-  authDomain: "ventasjc-b1a1d.firebaseapp.com",
-  projectId: "ventasjc-b1a1d"
+ apiKey: "AIzaSyDgTmtl4VoF2UahIDZGVwQ11TuayHv2eHw",
+ authDomain: "ventasjc-b1a1d.firebaseapp.com",
+ projectId: "ventasjc-b1a1d"
 };
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-let productos = [];
-let conteoData = {potes:0,tinas:0};
+let productos=[];
+let conteoData={potes:0,tinas:0};
 
-let gananciasPotes = 0;
-let gananciasTinas = 0;
-let inversionPotes = 0;
-let inversionTinas = 0;
-let reinvertirPotes = 0;
-let reinvertirTinas = 0;
-let hoyPotes = 0;
-let hoyTinas = 0;
+let gananciasPotes=0, gananciasTinas=0;
+let inversionPotes=0, inversionTinas=0;
+let reinvertirPotes=0, reinvertirTinas=0;
+let hoyPotes=0, hoyTinas=0;
 
 function login(){
  if(user.value==="Julio" && pass.value==="1234*"){
@@ -193,12 +147,12 @@ function logout(){
 }
 
 function agregar(){
- let nuevo = {
-   nombre:nombre.value,
-   stock:+stock.value,
-   costo:+costo.value,
-   precio:+precio.value,
-   tipo:(+costo.value)==850?"pote":"tina"
+ let nuevo={
+  nombre:nombre.value,
+  stock:+stock.value,
+  costo:+costo.value,
+  precio:+precio.value,
+  tipo:(+costo.value)==850?"pote":"tina"
  };
  db.collection("productos").add(nuevo);
 }
@@ -206,117 +160,92 @@ function agregar(){
 db.collection("productos").onSnapshot(snapshot=>{
  productos=[];
  snapshot.forEach(doc=>{
-   let data=doc.data();
-   data.id=doc.id;
-   productos.push(data);
+  let data=doc.data(); data.id=doc.id;
+  productos.push(data);
  });
  render();
 });
 
 function vender(id,i){
- if(productos[i].stock<=0)return;
-
- let p = productos[i];
+ let p=productos[i];
+ if(p.stock<=0)return;
 
  db.collection("productos").doc(id).update({stock:p.stock-1});
 
- let ganancia = p.precio - p.costo;
+ let g=p.precio-p.costo;
 
  if(p.tipo==="pote"){
-   gananciasPotes += ganancia;
-   inversionPotes += p.costo;
-   reinvertirPotes += p.costo;
-   hoyPotes += p.precio;
-   conteoData.potes++;
+  gananciasPotes+=g;
+  inversionPotes+=p.costo;
+  reinvertirPotes+=p.costo;
+  hoyPotes+=p.precio;
+  conteoData.potes++;
  }else{
-   gananciasTinas += ganancia;
-   inversionTinas += p.costo;
-   reinvertirTinas += p.costo;
-   hoyTinas += p.precio;
-   conteoData.tinas++;
+  gananciasTinas+=g;
+  inversionTinas+=p.costo;
+  reinvertirTinas+=p.costo;
+  hoyTinas+=p.precio;
+  conteoData.tinas++;
  }
-
  render();
-});
+}
 
- let ganancia = p.precio - p.costo;
-
- if(p.tipo==="pote"){
-   gananciasPotes += ganancia;
-   inversionPotes += p.costo;
-   reinvertirPotes += p.costo;
-   hoyPotes += p.precio;
-   conteoData.potes++;
- }else{
-   gananciasTinas += ganancia;
-   inversionTinas += p.costo;
-   reinvertirTinas += p.costo;
-   hoyTinas += p.precio;
-   conteoData.tinas++;
+function editar(id,i){
+ let nuevo=prompt("Nuevo stock:",productos[i].stock);
+ if(nuevo!==null){
+  db.collection("productos").doc(id).update({stock:+nuevo});
  }
-
- render();
 }
 
 function eliminar(id){
  db.collection("productos").doc(id).delete();
 }
 
-// 🔥 EDITAR PRODUCTO
-function editar(id,i){
- let nuevoStock = prompt("Nuevo stock:", productos[i].stock);
- if(nuevoStock===null) return;
-
- db.collection("productos").doc(id).update({
-   stock: +nuevoStock
- });
-}
-
 function reiniciar(){
  conteoData={potes:0,tinas:0};
- gananciasPotes=0;
- gananciasTinas=0;
- inversionPotes=0;
- inversionTinas=0;
- reinvertirPotes=0;
- reinvertirTinas=0;
- hoyPotes=0;
- hoyTinas=0;
+ gananciasPotes=gananciasTinas=0;
+ inversionPotes=inversionTinas=0;
+ reinvertirPotes=reinvertirTinas=0;
+ hoyPotes=hoyTinas=0;
  render();
+}
+
+function exportar(){
+ let data=[["Producto","Costo","Precio"]];
+ productos.forEach(p=>data.push([p.nombre,p.costo,p.precio]));
+ let csv=data.map(e=>e.join(",")).join("\n");
+ let blob=new Blob([csv]);
+ let a=document.createElement("a");
+ a.href=URL.createObjectURL(blob);
+ a.download="ventas.csv";
+ a.click();
 }
 
 function render(){
  let pHTML="",tHTML="";
-
  productos.forEach((p,i)=>{
  let card=`<div class='card'>
- ${p.nombre}<br>
- Stock:${p.stock}<br>
+ ${p.nombre}<br>Stock:${p.stock}<br>
  <button onclick="vender('${p.id}',${i})">Vender</button>
  <button onclick="editar('${p.id}',${i})">Editar</button>
  <button onclick="eliminar('${p.id}')">Eliminar</button>
  </div>`;
-
- if(p.tipo==="pote") pHTML+=card;
- else tHTML+=card;
+ if(p.tipo==="pote") pHTML+=card; else tHTML+=card;
  });
 
  potes.innerHTML=pHTML;
  tinas.innerHTML=tHTML;
 
- conteoTexto.innerHTML = "Potes: "+conteoData.potes+" | Tinas: "+conteoData.tinas;
+ conteoTexto.innerHTML=`Potes:${conteoData.potes} | Tinas:${conteoData.tinas}`;
 
- gananciasPotes.innerText = gananciasPotes;
- gananciasTinas.innerText = gananciasTinas;
-
- inversionPotes.innerText = inversionPotes;
- inversionTinas.innerText = inversionTinas;
-
- reinvertirPotes.innerText = reinvertirPotes;
- reinvertirTinas.innerText = reinvertirTinas;
-
- hoyPotes.innerText = hoyPotes;
- hoyTinas.innerText = hoyTinas;
+ gananciasPotes.innerText=gananciasPotes;
+ gananciasTinas.innerText=gananciasTinas;
+ inversionPotes.innerText=inversionPotes;
+ inversionTinas.innerText=inversionTinas;
+ reinvertirPotes.innerText=reinvertirPotes;
+ reinvertirTinas.innerText=reinvertirTinas;
+ hoyPotes.innerText=hoyPotes;
+ hoyTinas.innerText=hoyTinas;
 }
 
 </script>
