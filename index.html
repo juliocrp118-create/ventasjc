@@ -9,7 +9,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// 🔥 LOCAL STORAGE (NUEVO)
+// 🔥 LOCAL STORAGE
 let productos = JSON.parse(localStorage.getItem("productos")) || [];
 
 function guardarLocal(){
@@ -55,6 +55,7 @@ function agregar(){
  }
 
  let nuevo = {
+  id: Date.now().toString(), // 🔥 ID único
   nombre:nombre.value,
   stock:+stock.value,
   costo:c,
@@ -66,39 +67,51 @@ function agregar(){
  // LOCAL
  productos.push(nuevo);
  guardarLocal();
+ render();
 
  // FIREBASE
- db.collection("productos").add({
-  ...nuevo,
-  fecha: firebase.firestore.FieldValue.serverTimestamp()
- });
-
- render();
+ if(navigator.onLine){
+   db.collection("productos").doc(nuevo.id).set({
+     ...nuevo,
+     fecha: firebase.firestore.FieldValue.serverTimestamp()
+   });
+ }
 }
 
-// 🔥 SINCRONIZACIÓN
-db.collection("productos")
-.orderBy("fecha","asc")
-.onSnapshot(snapshot=>{
- productos=[];
+// 🔥 SINCRONIZACIÓN (ARREGLADA)
+if(navigator.onLine){
+ db.collection("productos")
+ .orderBy("fecha","asc")
+ .onSnapshot(snapshot=>{
 
- snapshot.forEach(doc=>{
-  let d=doc.data();
-  d.id=doc.id;
+  let nube=[];
 
-  // 🔥 CONVERTIR FECHA
-  if(d.fecha && d.fecha.toDate){
-    d.fecha = d.fecha.toDate();
-  }
+  snapshot.forEach(doc=>{
+    let d=doc.data();
+    d.id=doc.id;
 
-  productos.push(d);
+    if(d.fecha && d.fecha.toDate){
+      d.fecha = d.fecha.toDate();
+    }
+
+    nube.push(d);
+  });
+
+  // 🔥 MEZCLA LOCAL + NUBE
+  let mapa = {};
+
+  [...productos, ...nube].forEach(p=>{
+    mapa[p.id] = p;
+  });
+
+  productos = Object.values(mapa);
+
+  guardarLocal();
+  render();
  });
+}
 
- guardarLocal(); // 🔥 GUARDA LOCAL
- render();
-});
-
-// VENDER
+// 🔥 VENDER
 function vender(id,i){
  let p=productos[i];
  if(p.stock<=0)return;
@@ -107,7 +120,9 @@ function vender(id,i){
 
  guardarLocal();
 
- db.collection("productos").doc(id).update({stock:p.stock});
+ if(navigator.onLine){
+  db.collection("productos").doc(p.id).update({stock:p.stock});
+ }
 
  let g=p.precio-p.costo;
 
@@ -134,19 +149,26 @@ function editar(id,i){
   productos[i].stock=+n;
   guardarLocal();
 
-  db.collection("productos").doc(id).update({stock:+n});
+  if(navigator.onLine){
+    db.collection("productos").doc(productos[i].id).update({stock:+n});
+  }
 
   render();
  }
 }
 
 // ELIMINAR
-function eliminar(id){
- productos = productos.filter(p => p.id !== id);
+function eliminar(id,i){
+ let p=productos[i];
 
+ productos.splice(i,1);
  guardarLocal();
 
- db.collection("productos").doc(id).delete();
+ if(navigator.onLine){
+  db.collection("productos").doc(p.id).delete();
+ }
+
+ render();
 }
 
 // REINICIAR
@@ -180,8 +202,13 @@ function importar(e){
   let datos=JSON.parse(ev.target.result);
 
   datos.forEach(p=>{
-    productos.push(p); // 🔥 LOCAL
-    db.collection("productos").add(p); // 🔥 FIREBASE
+    p.id = p.id || Date.now() + Math.random(); // 🔥 evita duplicados
+
+    productos.push(p);
+
+    if(navigator.onLine){
+      db.collection("productos").doc(p.id).set(p);
+    }
   });
 
   guardarLocal();
@@ -214,6 +241,8 @@ function exportarExcel(){
 // 🔥 RENDER
 function render(){
 
+ productos.sort((a,b)=>new Date(a.fecha)-new Date(b.fecha));
+
  let pHTML="",tHTML="";
  let invP=0,invT=0;
 
@@ -228,7 +257,7 @@ function render(){
    Stock:${p.stock}<br>
    <button onclick="vender('${p.id}',${i})">Vender</button>
    <button onclick="editar('${p.id}',${i})">Editar</button>
-   <button onclick="eliminar('${p.id}')">Eliminar</button>
+   <button onclick="eliminar('${p.id}',${i})">Eliminar</button>
    </div>`;
 
    if(p.tipo==="pote") pHTML+=card;
@@ -253,7 +282,7 @@ function render(){
  hoyTinas.innerText=hTinas;
 }
 
-// 🔥 INICIO (IMPORTANTE)
+// 🔥 INICIO
 render();
 
 </script>
