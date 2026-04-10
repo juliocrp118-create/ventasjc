@@ -121,6 +121,9 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+// 🔥 mejora sincronización
+firebase.firestore().enablePersistence().catch(()=>{});
+
 let productos=[];
 let conteoData={potes:0,tinas:0};
 
@@ -129,8 +132,8 @@ let rPotes=0, rTinas=0;
 let hPotes=0, hTinas=0;
 
 function login(){
- let u=document.getElementById("user").value.trim();
- let p=document.getElementById("pass").value.trim();
+ let u=user.value.trim();
+ let p=pass.value.trim();
  if(u==="Julio" && p==="1234*"){
   loginDiv.style.display="none";
   app.style.display="block";
@@ -154,7 +157,7 @@ function agregar(){
  }else if(c === 2900){
    tipo = "tina";
  }else{
-   alert("Costo inválido (850 o 2900)");
+   alert("Costo inválido");
    return;
  }
 
@@ -169,10 +172,10 @@ function agregar(){
  db.collection("productos").add(nuevo);
 }
 
-db.collection("productos")
-.onSnapshot(function(snapshot){
+// 🔥 SINCRONIZACIÓN REAL ARREGLADA
+db.collection("productos").onSnapshot(function(snapshot){
 
- console.log("🔥 conectado a Firebase");
+ console.log("🔥 Firebase conectado");
 
  productos = [];
 
@@ -185,14 +188,7 @@ db.collection("productos")
  render();
 
 }, function(error){
- console.error("❌ error Firebase:", error);
-});
- productos=[];
- snapshot.forEach(doc=>{
-  let d=doc.data(); d.id=doc.id;
-  productos.push(d);
- });
- render();
+ console.error("❌ Error Firebase:", error);
 });
 
 function vender(id,i){
@@ -244,7 +240,6 @@ function render(){
 
  productos.forEach((p,i)=>{
 
-   // 🔥 INVERSIÓN REAL (SOLO STOCK)
    if(p.tipo==="pote"){
      invP += p.stock * p.costo;
    }else{
