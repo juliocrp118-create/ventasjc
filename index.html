@@ -41,13 +41,13 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
   <div class="login-box">
     <h2>Login VentasJC</h2>
     <input id="user" placeholder="Usuario"><br>
-    <input id="pass" type="password" placeholder="ContraseÃ±a"><br>
+    <input id="pass" type="password" placeholder="Contraseña"><br>
     <button onclick="login()">Entrar</button>
   </div>
 </div>
 
 <div id="app" class="overlay" style="display:none;">
-<button class="logout" onclick="logout()">Cerrar sesiÃ³n</button>
+<button class="logout" onclick="logout()">Cerrar sesión</button>
 
 <h2>VentasJC</h2>
 
@@ -65,31 +65,31 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 <div class="grid">
 
   <div class="box">
-    ðŸ’° Ganancias<br><br>
+    💰 Ganancias<br><br>
     Potes: <span id="gananciasPotes">0</span><br>
     Tinas: <span id="gananciasTinas">0</span>
   </div>
 
   <div class="box">
-    ðŸ“¦ InversiÃ³n<br><br>
+    📦 Inversión<br><br>
     Potes: <span id="inversionPotes">0</span><br>
     Tinas: <span id="inversionTinas">0</span>
   </div>
 
   <div class="box">
-    ðŸ”„ Reinvertir<br><br>
+    🔄 Reinvertir<br><br>
     Potes: <span id="reinvertirPotes">0</span><br>
     Tinas: <span id="reinvertirTinas">0</span>
   </div>
 
   <div class="box">
-    ðŸ’µ Hoy<br><br>
+    💵 Hoy<br><br>
     Potes: <span id="hoyPotes">0</span><br>
     Tinas: <span id="hoyTinas">0</span>
   </div>
 
   <div class="box">
-    ðŸ“¦ Total Stock<br><br>
+    📦 Total Stock<br><br>
     Potes: <span id="stockPotes">0</span><br>
     Tinas: <span id="stockTinas">0</span>
   </div>
@@ -103,12 +103,12 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 
 <br><br>
 
-<button onclick="exportar()">ðŸ“¤ Exportar JSON</button>
+<button onclick="exportar()">📤 Exportar JSON</button>
 <input type="file" onchange="importar(event)">
 
 <br><br>
 
-<button onclick="exportarExcel()">ðŸ“Š Exportar Excel</button>
+<button onclick="exportarExcel()">📊 Exportar Excel</button>
 </div>
 </div>
 
@@ -132,7 +132,7 @@ let gPotes=0, gTinas=0;
 let rPotes=0, rTinas=0;
 let hPotes=0, hTinas=0;
 
-// ðŸ”¥ GUARDAR / CARGAR
+// 🔥 GUARDAR / CARGAR
 function guardarDatos(){
  localStorage.setItem("ventasDatos", JSON.stringify({
   gPotes,gTinas,rPotes,rTinas,hPotes,hTinas,conteoData
@@ -153,7 +153,7 @@ function cargarDatos(){
  }
 }
 
-// ðŸ”¥ CARGAR AL INICIO
+// 🔥 CARGAR AL INICIO
 cargarDatos();
 
 function login(){
@@ -181,7 +181,7 @@ function agregar(){
  }else if(c === 2900){
    tipo = "tina";
  }else{
-   alert("Costo invÃ¡lido");
+   alert("Costo inválido");
    return;
  }
 
@@ -226,7 +226,7 @@ function vender(id,i){
   conteoData.tinas++;
  }
 
- guardarDatos(); // ðŸ”¥ guarda siempre
+ guardarDatos(); // 🔥 guarda siempre
  render();
 }
 
@@ -247,7 +247,7 @@ function reiniciar(){
  rPotes=rTinas=0;
  hPotes=hTinas=0;
 
- localStorage.removeItem("ventasDatos"); // ðŸ”¥ SOLO AQUÃ se borra
+ localStorage.removeItem("ventasDatos"); // 🔥 SOLO AQUÍ se borra
 
  render();
 }
