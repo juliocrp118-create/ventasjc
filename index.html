@@ -126,34 +126,47 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+// 🔥 NUEVO: referencia de ventas en Firebase
+const ventasRef = db.collection("ventas").doc("global");
+
 let productos=[];
 let conteoData={potes:0,tinas:0};
 let gPotes=0, gTinas=0;
 let rPotes=0, rTinas=0;
 let hPotes=0, hTinas=0;
 
-// 🔥 GUARDAR / CARGAR
-function guardarDatos(){
- localStorage.setItem("ventasDatos", JSON.stringify({
-  gPotes,gTinas,rPotes,rTinas,hPotes,hTinas,conteoData
- }));
-}
-
+// 🔥 CARGAR DESDE FIREBASE
 function cargarDatos(){
- let d = localStorage.getItem("ventasDatos");
- if(d){
-  let data = JSON.parse(d);
-  gPotes = data.gPotes || 0;
-  gTinas = data.gTinas || 0;
-  rPotes = data.rPotes || 0;
-  rTinas = data.rTinas || 0;
-  hPotes = data.hPotes || 0;
-  hTinas = data.hTinas || 0;
-  conteoData = data.conteoData || {potes:0,tinas:0};
- }
+ ventasRef.onSnapshot(doc=>{
+  if(doc.exists){
+    let data = doc.data();
+
+    gPotes = data.gPotes || 0;
+    gTinas = data.gTinas || 0;
+    rPotes = data.rPotes || 0;
+    rTinas = data.rTinas || 0;
+    hPotes = data.hPotes || 0;
+    hTinas = data.hTinas || 0;
+    conteoData = data.conteoData || {potes:0,tinas:0};
+
+    render();
+  }
+ });
 }
 
-// 🔥 CARGAR AL INICIO
+// 🔥 GUARDAR EN FIREBASE
+function guardarDatos(){
+ ventasRef.set({
+  gPotes,
+  gTinas,
+  rPotes,
+  rTinas,
+  hPotes,
+  hTinas,
+  conteoData
+ });
+}
+
 cargarDatos();
 
 function login(){
@@ -226,8 +239,7 @@ function vender(id,i){
   conteoData.tinas++;
  }
 
- guardarDatos(); // 🔥 guarda siempre
- render();
+ guardarDatos(); // 🔥 ahora guarda en Firebase
 }
 
 function editar(id,i){
@@ -247,7 +259,15 @@ function reiniciar(){
  rPotes=rTinas=0;
  hPotes=hTinas=0;
 
- localStorage.removeItem("ventasDatos"); // 🔥 SOLO AQUÍ se borra
+ ventasRef.set({
+  gPotes:0,
+  gTinas:0,
+  rPotes:0,
+  rTinas:0,
+  hPotes:0,
+  hTinas:0,
+  conteoData:{potes:0,tinas:0}
+ });
 
  render();
 }
