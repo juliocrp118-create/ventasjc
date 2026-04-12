@@ -103,12 +103,20 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 <h3>Ventas</h3>
 <p id="conteoTexto"></p>
 <button onclick="reiniciar()">Reiniciar</button>
+
+<br><br>
+<button onclick="exportar()">📤 Exportar JSON</button>
+<input type="file" onchange="importar(event)">
+
+<br><br>
+<button onclick="exportarExcel()">📊 Exportar Excel</button>
 </div>
 
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <script>
 
@@ -144,20 +152,15 @@ function logout(){
  loginDiv.style.display="flex";
 }
 
-// 🔥 AGREGAR
+// AGREGAR
 function agregar(){
 
  let c = +costo.value;
  let tipo = "";
 
- if(c === 850){
-   tipo = "pote";
- }else if(c === 2900){
-   tipo = "tina";
- }else{
-   alert("Costo inválido");
-   return;
- }
+ if(c === 850) tipo = "pote";
+ else if(c === 2900) tipo = "tina";
+ else return alert("Costo inválido");
 
  let cantidad = +stock.value;
 
@@ -173,9 +176,8 @@ function agregar(){
  });
 }
 
-// 🔥 REALTIME
-db.collection("productos")
-.orderBy("fecha","asc")
+// REALTIME
+db.collection("productos").orderBy("fecha","asc")
 .onSnapshot(snapshot=>{
  productos=[];
  snapshot.forEach(doc=>{
@@ -185,34 +187,34 @@ db.collection("productos")
  render();
 });
 
-// 🔥 VENDER
+// VENDER
 function vender(id,i){
  let p=productos[i];
  if(p.stock<=0)return;
 
  db.collection("productos").doc(id).update({
-   stock:p.stock-1,
-   ventas:(p.ventas||0)+1
+  stock:p.stock-1,
+  ventas:(p.ventas||0)+1
  });
 
  if(p.tipo==="pote") conteoData.potes++;
  else conteoData.tinas++;
 }
 
-// 🔥 EDITAR COMPLETO
+// EDITAR COMPLETO
 function editar(id,i){
- let p = productos[i];
+ let p=productos[i];
 
- let inv = prompt("Inventario:", p.inventario || 0);
- let disp = prompt("Disponibles:", p.stock || 0);
- let ven = prompt("Ventas:", p.ventas || 0);
+ let inv = prompt("Inventario:", p.inventario||0);
+ let disp = prompt("Disponibles:", p.stock||0);
+ let ven = prompt("Ventas:", p.ventas||0);
 
- if(inv!==null && disp!==null && ven!==null){
-   db.collection("productos").doc(id).update({
-     inventario:+inv,
-     stock:+disp,
-     ventas:+ven
-   });
+ if(inv!=null && disp!=null && ven!=null){
+  db.collection("productos").doc(id).update({
+   inventario:+inv,
+   stock:+disp,
+   ventas:+ven
+  });
  }
 }
 
@@ -228,7 +230,53 @@ function reiniciar(){
  render();
 }
 
-// 🔥 RENDER
+// EXPORTAR / IMPORTAR igual que tu código original...
+
+function exportar(){
+ db.collection("productos").get().then(snapshot=>{
+  let datos=[];
+  snapshot.forEach(doc=>datos.push(doc.data()));
+  let archivo=new Blob([JSON.stringify(datos,null,2)]);
+  let url=URL.createObjectURL(archivo);
+  let a=document.createElement("a");
+  a.href=url;
+  a.download="productos.json";
+  a.click();
+ });
+}
+
+function importar(e){
+ let archivo=e.target.files[0];
+ let lector=new FileReader();
+ lector.onload=function(ev){
+  let datos=JSON.parse(ev.target.result);
+  datos.forEach(p=>db.collection("productos").add(p));
+ };
+ lector.readAsText(archivo);
+}
+
+function exportarExcel(){
+ db.collection("productos").get().then(snapshot=>{
+  let datos=[];
+  snapshot.forEach(doc=>{
+    let p=doc.data();
+    datos.push({
+      Nombre:p.nombre,
+      Inventario:p.inventario,
+      Disponibles:p.stock,
+      Ventas:p.ventas,
+      Costo:p.costo,
+      Precio:p.precio
+    });
+  });
+  let hoja=XLSX.utils.json_to_sheet(datos);
+  let libro=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(libro,hoja,"Productos");
+  XLSX.writeFile(libro,"productos.xlsx");
+ });
+}
+
+// RENDER FINAL
 function render(){
 
  let pHTML="",tHTML="";
@@ -236,15 +284,16 @@ function render(){
 
  productos.forEach((p,i)=>{
 
-   if(p.tipo==="pote") invP+=p.stock*p.costo;
-   else invT+=p.stock*p.costo;
+   // 🔥 INVERSIÓN = INVENTARIO
+   if(p.tipo==="pote") invP+= (p.inventario||0)*p.costo;
+   else invT+= (p.inventario||0)*p.costo;
 
    let card=`
    <div class='card'>
    ${p.nombre}<br>
-   🧾 Inventario: ${p.inventario || 0}<br>
+   🧾 Inventario: ${p.inventario||0}<br>
    📦 Disponibles: ${p.stock}<br>
-   📊 Ventas: ${p.ventas || 0}<br>
+   📊 Ventas: ${p.ventas||0}<br>
 
    <button onclick="vender('${p.id}',${i})">Vender</button>
    <button onclick="editar('${p.id}',${i})">Editar</button>
@@ -272,6 +321,7 @@ function render(){
  hoyPotes.innerText=hPotes;
  hoyTinas.innerText=hTinas;
 }
+
 </script>
 
 </body>
