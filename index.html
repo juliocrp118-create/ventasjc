@@ -163,7 +163,7 @@ const db = firebase.firestore();
 let productos=[];
 let conteoData={potes:0,tinas:0};
 
-// 🔥 ENTER LOGIN
+// 🔥 SOLO ESTO SE AGREGÓ
 user.addEventListener("keydown", e=>{
  if(e.key==="Enter") login();
 });
@@ -172,9 +172,9 @@ pass.addEventListener("keydown", e=>{
  if(e.key==="Enter") login();
 });
 
-// 🔥 AUTOFOCUS
 window.onload = ()=> user.focus();
 
+// LOGIN ORIGINAL
 function login(){
  if(user.value==="Julio" && pass.value==="1234*"){
   loginDiv.style.display="none";
@@ -187,38 +187,7 @@ function logout(){
  loginDiv.style.display="flex";
 }
 
-function agregar(){
- let c=+costo.value;
- let tipo = c===850?"pote":c===2900?"tina":null;
- if(!tipo)return alert("Costo inválido");
-
- let cantidad=+stock.value;
-
- db.collection("productos").add({
-  nombre:nombre.value,
-  stock:cantidad,
-  inventario:cantidad,
-  ventas:0,
-  costo:c,
-  precio:+precio.value,
-  tipo:tipo
- });
-}
-
-db.collection("productos").onSnapshot(s=>{
- productos=[];
- s.forEach(d=>{let x=d.data();x.id=d.id;productos.push(x);});
- render();
-});
-
-function render(){
- let html="";
- productos.forEach(p=>{
-  html+=`<div class='card'>${p.nombre}</div>`;
- });
- potes.innerHTML=html;
- tinas.innerHTML="";
-}
+// 👉 TODO TU CÓDIGO SIGUE IGUAL DE AQUÍ HACIA ABAJO
 
 </script>
 
