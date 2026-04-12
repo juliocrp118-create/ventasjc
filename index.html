@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>VentasJC PRO FINAL</title>
+<title>VentasJC PRO</title>
 
 <style>
 body{
@@ -52,9 +52,7 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
   text-align:center;
 }
 
-.info-box{
-  flex:1;
-}
+.info-box{flex:1;}
 
 .info-box span{
   font-size:12px;
@@ -104,9 +102,9 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 
 <button class="logout" onclick="logout()">Cerrar sesión</button>
 
-<h2>VentasJC PRO</h2>
+<h2>VentasJC PRO 🍦</h2>
 
-<input id="nombre" placeholder="Nombre">
+<input id="nombre" placeholder="Nombre (Ej: Chocolate)">
 <input id="stock" placeholder="Inventario">
 <input id="costo" placeholder="Costo (850 o 2900)">
 <input id="precio" placeholder="Precio">
@@ -127,10 +125,8 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 
 <div class="box">💵 Hoy<br>Potes: <span id="hoyPotes">0</span><br>Tinas: <span id="hoyTinas">0</span></div>
 
-<!-- 🔥 NUEVO: VENTAS -->
 <div class="box">📊 Ventas<br>Potes: <span id="ventasPotes">0</span><br>Tinas: <span id="ventasTinas">0</span></div>
 
-<!-- 🔥 NUEVO: DISPONIBLES -->
 <div class="box">📦 Disponibles<br>Potes: <span id="dispPotes">0</span><br>Tinas: <span id="dispTinas">0</span></div>
 
 </div>
@@ -167,6 +163,23 @@ const db = firebase.firestore();
 
 let productos=[];
 let conteoData={potes:0,tinas:0};
+
+// 🔥 ICONOS POR SABOR
+function obtenerIcono(nombre){
+ nombre = nombre.toLowerCase();
+
+ if(nombre.includes("chocolate")) return "🍫";
+ if(nombre.includes("fresa")) return "🍓";
+ if(nombre.includes("vainilla")) return "🍦";
+ if(nombre.includes("mango")) return "🥭";
+ if(nombre.includes("coco")) return "🥥";
+ if(nombre.includes("caramelo")) return "🍯";
+ if(nombre.includes("pistacho")) return "🌰";
+ if(nombre.includes("limón")) return "🍋";
+ if(nombre.includes("naranja")) return "🍊";
+
+ return "🍨";
+}
 
 function login(){
  if(user.value==="Julio" && pass.value==="1234*"){
@@ -316,9 +329,11 @@ function render(){
 
   let color = p.stock==0?"red":p.stock<=3?"orange":"black";
 
+  let icono = obtenerIcono(p.nombre);
+
   let card=`
   <div class='card'>
-  <b>${p.nombre}</b>
+  <b>${icono} ${p.nombre}</b>
 
   <div class="info-row">
     <div class="info-box"><span>🧾 Inventario</span><b>${inv}</b></div>
