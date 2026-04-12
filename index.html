@@ -52,6 +52,7 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
   padding:15px;
   margin:10px 0;
   border-radius:12px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.3);
 }
 
 .info-row{
@@ -111,52 +112,77 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 
 <button class="logout" onclick="logout()">Cerrar sesión</button>
 
-<h2>VentasJC</h2>
+<h2>VentasJC </h2>
 
-<input id="nombre" placeholder="Nombre">
+<input id="nombre" placeholder="Nombre (Ej: Chocolate)">
 <input id="stock" placeholder="Inventario">
 <input id="costo" placeholder="Costo (850 o 2900)">
 <input id="precio" placeholder="Precio">
 <button class="agregar" onclick="agregar()">Agregar</button>
 
 <div class="flex">
+
 <div class="col">
   <h3 class="titulo">🍦 Potes 1L</h3>
   <div id="potes"></div>
 </div>
+
 <div class="col">
   <h3 class="titulo">🪣 Tinas 4L</h3>
   <div id="tinas"></div>
 </div>
+
 </div>
 
 <div class="grid">
+
+<div class="box">💰 Ganancias<br>Potes: <span id="gananciasPotes">0</span><br>Tinas: <span id="gananciasTinas">0</span></div>
+
+<div class="box">📦 Inversión<br>Potes: <span id="inversionPotes">0</span><br>Tinas: <span id="inversionTinas">0</span></div>
+
+<div class="box">🔄 Reinvertir<br>Potes: <span id="reinvertirPotes">0</span><br>Tinas: <span id="reinvertirTinas">0</span></div>
+
+<div class="box">💵 Hoy<br>Potes: <span id="hoyPotes">0</span><br>Tinas: <span id="hoyTinas">0</span></div>
+
 <div class="box">📊 Ventas<br>Potes: <span id="ventasPotes">0</span><br>Tinas: <span id="ventasTinas">0</span></div>
+
+<div class="box">📦 Disponibles<br>Potes: <span id="dispPotes">0</span><br>Tinas: <span id="dispTinas">0</span></div>
+
 </div>
 
 <div class="center">
 <button onclick="reiniciar()">Reiniciar</button>
+
+<br><br>
+
+<button onclick="exportar()">📤 Exportar JSON</button>
+<input type="file" onchange="importar(event)">
+
+<br><br>
+
+<button onclick="exportarExcel()">📊 Exportar Excel</button>
 </div>
 
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <script>
 
 const firebaseConfig = {
- apiKey: "AIzaSy...",
- authDomain: "...",
- projectId: "..."
+ apiKey: "AIzaSyDgTmtl4VoF2UahIDZGVwQ11TuayHv2eHw",
+ authDomain: "ventasjc-b1a1d.firebaseapp.com",
+ projectId: "ventasjc-b1a1d"
 };
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 let productos=[];
+let conteoData={potes:0,tinas:0};
 
-// LOGIN
 function login(){
  if(user.value==="Julio" && pass.value==="1234*"){
   loginDiv.style.display="none";
@@ -169,34 +195,32 @@ function logout(){
  loginDiv.style.display="flex";
 }
 
-// AGREGAR
 function agregar(){
  let c=+costo.value;
  let tipo = c===850?"pote":c===2900?"tina":null;
  if(!tipo)return alert("Costo inválido");
 
+ let cantidad=+stock.value;
+
  db.collection("productos").add({
   nombre:nombre.value,
-  stock:+stock.value,
+  stock:cantidad,
+  inventario:cantidad,
   ventas:0,
   costo:c,
   precio:+precio.value,
-  tipo:tipo
+  tipo:tipo,
+  fecha: firebase.firestore.FieldValue.serverTimestamp()
  });
 }
 
-// TIEMPO REAL
-db.collection("productos").onSnapshot(s=>{
+db.collection("productos").orderBy("fecha","asc")
+.onSnapshot(s=>{
  productos=[];
- s.forEach(d=>{
-  let x=d.data();
-  x.id=d.id;
-  productos.push(x);
- });
+ s.forEach(d=>{let x=d.data();x.id=d.id;productos.push(x);});
  render();
 });
 
-// VENDER
 function vender(id,i){
  let p=productos[i];
  if(p.stock<=0)return;
@@ -205,45 +229,67 @@ function vender(id,i){
   stock:p.stock-1,
   ventas:(p.ventas||0)+1
  });
+
+ if(p.tipo==="pote") conteoData.potes++;
+ else conteoData.tinas++;
 }
 
-// REINICIAR
 function reiniciar(){
  db.collection("productos").get().then(s=>{
   s.forEach(doc=>{
    db.collection("productos").doc(doc.id).update({ventas:0});
   });
  });
+
+ conteoData={potes:0,tinas:0};
 }
 
-// RENDER CORRECTO
 function render(){
 
+ let pHTML="",tHTML="";
+ let invP=0,invT=0,dispP=0,dispT=0;
+
+ let gP=0,gT=0,rP=0,rT=0,hP=0,hT=0;
+
+ // 🔥 NUEVO
  let ventasP=0, ventasT=0;
 
- productos.forEach(p=>{
+ productos.forEach((p,i)=>{
+
+  let inv=p.inventario||0;
   let v=p.ventas||0;
-  if(p.tipo==="pote") ventasP+=v;
-  else ventasT+=v;
+
+  if(p.tipo==="pote"){
+   invP+=inv*p.costo;
+   dispP+=p.stock;
+   ventasP += v;
+  }else{
+   invT+=inv*p.costo;
+   dispT+=p.stock;
+   ventasT += v;
+  }
+
  });
 
+ // 🔥 CAMBIO IMPORTANTE
  ventasPotes.innerText=ventasP;
  ventasTinas.innerText=ventasT;
+
+ dispPotes.innerText=dispP;
+ dispTinas.innerText=dispT;
 }
 
-// ENTER LOGIN (ARREGLADO)
+// ENTER LOGIN
 window.onload = function(){
-
  document.getElementById("user").focus();
 
- document.getElementById("user").addEventListener("keydown", function(e){
-  if(e.key === "Enter") login();
+ document.getElementById("user").addEventListener("keydown", e=>{
+  if(e.key==="Enter") login();
  });
 
- document.getElementById("pass").addEventListener("keydown", function(e){
-  if(e.key === "Enter") login();
+ document.getElementById("pass").addEventListener("keydown", e=>{
+  if(e.key==="Enter") login();
  });
-
 };
 
 </script>
