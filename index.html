@@ -36,10 +36,38 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 .flex{display:flex;gap:20px}
 .col{flex:1}
 
-.card{background:white;color:black;padding:15px;margin:10px 0;border-radius:12px}
+.card{
+  background:white;
+  color:black;
+  padding:15px;
+  margin:10px 0;
+  border-radius:12px;
+}
 
-.grid{display:flex;gap:20px;margin-top:20px;flex-wrap:wrap;justify-content:center}
-.box{background:white;color:black;padding:15px;border-radius:12px;width:220px;text-align:center;font-weight:bold}
+.info-row{
+  display:flex;
+  justify-content:space-between;
+  margin-top:8px;
+  font-size:14px;
+}
+
+.grid{
+  display:flex;
+  gap:20px;
+  margin-top:20px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+
+.box{
+  background:white;
+  color:black;
+  padding:15px;
+  border-radius:12px;
+  width:220px;
+  text-align:center;
+  font-weight:bold;
+}
 
 .center{text-align:center;margin-top:20px}
 </style>
@@ -215,7 +243,7 @@ function reiniciar(){
  render();
 }
 
-// 🔥 RENDER FINAL PRO
+// 🔥 RENDER FINAL
 function render(){
 
  let pHTML="",tHTML="";
@@ -230,11 +258,9 @@ function render(){
    let inventario = p.inventario ?? p.stock ?? 0;
    let ventas = p.ventas || 0;
 
-   // inversión
    if(p.tipo==="pote") invP+= inventario*p.costo;
    else invT+= inventario*p.costo;
 
-   // cálculos
    let ganancia = (p.precio - p.costo) * ventas;
 
    if(p.tipo==="pote"){
@@ -249,10 +275,15 @@ function render(){
 
    let card=`
    <div class='card'>
-   ${p.nombre}<br>
-   🧾 Inventario: ${inventario}<br>
-   📦 Disponibles: ${p.stock}<br>
-   📊 Ventas: ${ventas}<br>
+   ${p.nombre}
+
+   <div class="info-row">
+     <div>🧾 ${inventario}</div>
+     <div>📦 ${p.stock}</div>
+     <div>📊 ${ventas}</div>
+   </div>
+
+   <br>
 
    <button onclick="vender('${p.id}',${i})">Vender</button>
    <button onclick="editar('${p.id}',${i})">Editar</button>
