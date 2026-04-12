@@ -49,6 +49,7 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
   justify-content:space-between;
   margin-top:8px;
   font-size:14px;
+  gap:10px;
 }
 
 .grid{
@@ -243,7 +244,7 @@ function reiniciar(){
  render();
 }
 
-// 🔥 RENDER FINAL
+// RENDER
 function render(){
 
  let pHTML="",tHTML="";
@@ -278,9 +279,9 @@ function render(){
    ${p.nombre}
 
    <div class="info-row">
-     <div>🧾 ${inventario}</div>
-     <div>📦 ${p.stock}</div>
-     <div>📊 ${ventas}</div>
+     <div>🧾 Inventario: ${inventario}</div>
+     <div>📦 Disponibles: ${p.stock}</div>
+     <div>📊 Ventas: ${ventas}</div>
    </div>
 
    <br>
