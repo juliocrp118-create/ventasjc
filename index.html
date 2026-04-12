@@ -201,7 +201,7 @@ function vender(id,i){
  else conteoData.tinas++;
 }
 
-// EDITAR COMPLETO
+// EDITAR
 function editar(id,i){
  let p=productos[i];
 
@@ -230,8 +230,7 @@ function reiniciar(){
  render();
 }
 
-// EXPORTAR / IMPORTAR igual que tu código original...
-
+// EXPORTAR
 function exportar(){
  db.collection("productos").get().then(snapshot=>{
   let datos=[];
@@ -245,6 +244,7 @@ function exportar(){
  });
 }
 
+// IMPORTAR
 function importar(e){
  let archivo=e.target.files[0];
  let lector=new FileReader();
@@ -255,6 +255,7 @@ function importar(e){
  lector.readAsText(archivo);
 }
 
+// EXCEL
 function exportarExcel(){
  db.collection("productos").get().then(snapshot=>{
   let datos=[];
@@ -276,7 +277,7 @@ function exportarExcel(){
  });
 }
 
-// RENDER FINAL
+// 🔥 RENDER FINAL CORRECTO
 function render(){
 
  let pHTML="",tHTML="";
@@ -284,14 +285,16 @@ function render(){
 
  productos.forEach((p,i)=>{
 
-   // 🔥 INVERSIÓN = INVENTARIO
-   if(p.tipo==="pote") invP+= (p.inventario||0)*p.costo;
-   else invT+= (p.inventario||0)*p.costo;
+   // 🔥 SOLO INVENTARIO
+   let inventario = p.inventario ?? p.stock ?? 0;
+
+   if(p.tipo==="pote") invP+= inventario * p.costo;
+   else invT+= inventario * p.costo;
 
    let card=`
    <div class='card'>
    ${p.nombre}<br>
-   🧾 Inventario: ${p.inventario||0}<br>
+   🧾 Inventario: ${inventario}<br>
    📦 Disponibles: ${p.stock}<br>
    📊 Ventas: ${p.ventas||0}<br>
 
