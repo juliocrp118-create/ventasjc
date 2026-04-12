@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>VentasJC</title>
+<title>VentasJC FINAL PRO</title>
 
 <style>
 body{
@@ -103,20 +103,12 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 <h3>Ventas</h3>
 <p id="conteoTexto"></p>
 <button onclick="reiniciar()">Reiniciar</button>
-
-<br><br>
-<button onclick="exportar()">📤 Exportar JSON</button>
-<input type="file" onchange="importar(event)">
-
-<br><br>
-<button onclick="exportarExcel()">📊 Exportar Excel</button>
 </div>
 
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <script>
 
@@ -131,10 +123,6 @@ const db = firebase.firestore();
 
 let productos=[];
 let conteoData={potes:0,tinas:0};
-
-let gPotes=0, gTinas=0;
-let rPotes=0, rTinas=0;
-let hPotes=0, hTinas=0;
 
 function login(){
  let u=user.value.trim();
@@ -224,79 +212,47 @@ function eliminar(id){
 
 function reiniciar(){
  conteoData={potes:0,tinas:0};
- gPotes=gTinas=0;
- rPotes=rTinas=0;
- hPotes=hTinas=0;
  render();
 }
 
-// EXPORTAR
-function exportar(){
- db.collection("productos").get().then(snapshot=>{
-  let datos=[];
-  snapshot.forEach(doc=>datos.push(doc.data()));
-  let archivo=new Blob([JSON.stringify(datos,null,2)]);
-  let url=URL.createObjectURL(archivo);
-  let a=document.createElement("a");
-  a.href=url;
-  a.download="productos.json";
-  a.click();
- });
-}
-
-// IMPORTAR
-function importar(e){
- let archivo=e.target.files[0];
- let lector=new FileReader();
- lector.onload=function(ev){
-  let datos=JSON.parse(ev.target.result);
-  datos.forEach(p=>db.collection("productos").add(p));
- };
- lector.readAsText(archivo);
-}
-
-// EXCEL
-function exportarExcel(){
- db.collection("productos").get().then(snapshot=>{
-  let datos=[];
-  snapshot.forEach(doc=>{
-    let p=doc.data();
-    datos.push({
-      Nombre:p.nombre,
-      Inventario:p.inventario,
-      Disponibles:p.stock,
-      Ventas:p.ventas,
-      Costo:p.costo,
-      Precio:p.precio
-    });
-  });
-  let hoja=XLSX.utils.json_to_sheet(datos);
-  let libro=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(libro,hoja,"Productos");
-  XLSX.writeFile(libro,"productos.xlsx");
- });
-}
-
-// 🔥 RENDER FINAL CORRECTO
+// 🔥 RENDER FINAL PRO
 function render(){
 
  let pHTML="",tHTML="";
  let invP=0,invT=0;
 
+ let gPotes=0,gTinas=0;
+ let rPotes=0,rTinas=0;
+ let hPotes=0,hTinas=0;
+
  productos.forEach((p,i)=>{
 
-   // 🔥 SOLO INVENTARIO
    let inventario = p.inventario ?? p.stock ?? 0;
+   let ventas = p.ventas || 0;
 
-   if(p.tipo==="pote") invP+= inventario * p.costo;
-   else invT+= inventario * p.costo;
+   // inversión
+   if(p.tipo==="pote") invP+= inventario*p.costo;
+   else invT+= inventario*p.costo;
+
+   // cálculos
+   let ganancia = (p.precio - p.costo) * ventas;
+
+   if(p.tipo==="pote"){
+     gPotes += ganancia;
+     rPotes += ventas * p.costo;
+     hPotes += ventas * p.precio;
+   }else{
+     gTinas += ganancia;
+     rTinas += ventas * p.costo;
+     hTinas += ventas * p.precio;
+   }
 
    let card=`
    <div class='card'>
    ${p.nombre}<br>
    🧾 Inventario: ${inventario}<br>
    📦 Disponibles: ${p.stock}<br>
-   📊 Ventas: ${p.ventas||0}<br>
+   📊 Ventas: ${ventas}<br>
 
    <button onclick="vender('${p.id}',${i})">Vender</button>
    <button onclick="editar('${p.id}',${i})">Editar</button>
