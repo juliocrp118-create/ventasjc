@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>VentasJC PRO</title>
+<title>VentasJC PRO FINAL</title>
 
 <style>
 body{
@@ -128,12 +128,22 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 <h3>Ventas</h3>
 <p id="conteoTexto"></p>
 <button onclick="reiniciar()">Reiniciar</button>
+
+<br><br>
+
+<button onclick="exportar()">📤 Exportar JSON</button>
+<input type="file" onchange="importar(event)">
+
+<br><br>
+
+<button onclick="exportarExcel()">📊 Exportar Excel</button>
 </div>
 
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <script>
 
@@ -230,11 +240,70 @@ function eliminar(id){
  db.collection("productos").doc(id).delete();
 }
 
+// 🔥 REINICIAR REAL
 function reiniciar(){
+
+ if(!confirm("¿Seguro que quieres reiniciar todo?")) return;
+
+ db.collection("productos").get().then(snapshot=>{
+   snapshot.forEach(doc=>{
+     db.collection("productos").doc(doc.id).update({
+       ventas:0
+     });
+   });
+ });
+
  conteoData={potes:0,tinas:0};
- render();
 }
 
+// EXPORTAR JSON
+function exportar(){
+ db.collection("productos").get().then(snapshot=>{
+  let datos=[];
+  snapshot.forEach(doc=>datos.push(doc.data()));
+  let archivo=new Blob([JSON.stringify(datos,null,2)]);
+  let url=URL.createObjectURL(archivo);
+  let a=document.createElement("a");
+  a.href=url;
+  a.download="productos.json";
+  a.click();
+ });
+}
+
+// IMPORTAR
+function importar(e){
+ let archivo=e.target.files[0];
+ let lector=new FileReader();
+ lector.onload=function(ev){
+  let datos=JSON.parse(ev.target.result);
+  datos.forEach(p=>db.collection("productos").add(p));
+ };
+ lector.readAsText(archivo);
+}
+
+// EXCEL
+function exportarExcel(){
+ db.collection("productos").get().then(snapshot=>{
+  let datos=[];
+  snapshot.forEach(doc=>{
+    let p=doc.data();
+    datos.push({
+      Nombre:p.nombre,
+      Inventario:p.inventario,
+      Disponibles:p.stock,
+      Ventas:p.ventas,
+      Costo:p.costo,
+      Precio:p.precio
+    });
+  });
+  let hoja=XLSX.utils.json_to_sheet(datos);
+  let libro=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(libro,hoja,"Productos");
+  XLSX.writeFile(libro,"productos.xlsx");
+ });
+}
+
+// RENDER
 function render(){
 
  let pHTML="",tHTML="";
