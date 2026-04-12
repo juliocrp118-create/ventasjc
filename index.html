@@ -1,248 +1,4 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>VentasJC</title>
-
-<style>
-body{
-  font-family: Arial;
-  margin:0;
-  background: url('fondo.jpg') no-repeat center center fixed;
-  background-size: cover;
-}
-
-.overlay{
-  background:rgba(0,0,0,0.45);
-  min-height:100vh;
-  padding:20px;
-  color:white;
-}
-
-#loginDiv{display:flex;justify-content:center;align-items:center}
-
-.login-box{
-  background:rgba(0,0,0,0.6);
-  padding:30px;
-  border-radius:15px;
-  text-align:center;
-}
-
-input{margin:5px;padding:10px;border-radius:8px;border:none}
-button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font-weight:bold}
-.agregar{background:#00c853;color:white}
-.logout{background:#ff5252;color:white;float:right}
-
-.flex{display:flex;gap:20px}
-.col{flex:1}
-
-.titulo{
-  text-align:center;
-  font-size:22px;
-  font-weight:bold;
-  padding:8px;
-  border-radius:10px;
-  background:rgba(0,0,0,0.4);
-  margin-bottom:10px;
-}
-
-.card{
-  background:white;
-  color:black;
-  padding:15px;
-  margin:10px 0;
-  border-radius:12px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.3);
-}
-
-.info-row{
-  display:flex;
-  justify-content:space-between;
-  margin-top:10px;
-  text-align:center;
-}
-
-.info-box{flex:1;}
-
-.info-box span{
-  font-size:12px;
-  color:gray;
-}
-
-.info-box b{
-  display:block;
-  font-size:16px;
-  margin-top:3px;
-}
-
-.grid{
-  display:flex;
-  gap:20px;
-  margin-top:20px;
-  flex-wrap:wrap;
-  justify-content:center;
-}
-
-.box{
-  background:white;
-  color:black;
-  padding:15px;
-  border-radius:12px;
-  width:220px;
-  text-align:center;
-  font-weight:bold;
-}
-
-.center{text-align:center;margin-top:20px}
-</style>
-</head>
-
-<body>
-
-<div id="loginDiv" class="overlay">
-  <div class="login-box">
-    <h2>Login VentasJC</h2>
-    <input id="user" placeholder="Usuario"><br>
-    <input id="pass" type="password" placeholder="Contraseña"><br>
-    <button onclick="login()">Entrar</button>
-  </div>
-</div>
-
-<div id="app" class="overlay" style="display:none;">
-
-<button class="logout" onclick="logout()">Cerrar sesión</button>
-
-<h2>VentasJC </h2>
-
-<input id="nombre" placeholder="Nombre (Ej: Chocolate)">
-<input id="stock" placeholder="Inventario">
-<input id="costo" placeholder="Costo (850 o 2900)">
-<input id="precio" placeholder="Precio">
-<button class="agregar" onclick="agregar()">Agregar</button>
-
-<div class="flex">
-
-<div class="col">
-  <h3 class="titulo">🍦 Potes 1L</h3>
-  <div id="potes"></div>
-</div>
-
-<div class="col">
-  <h3 class="titulo">🪣 Tinas 4L</h3>
-  <div id="tinas"></div>
-</div>
-
-</div>
-
-<div class="grid">
-
-<div class="box">💰 Ganancias<br>Potes: <span id="gananciasPotes">0</span><br>Tinas: <span id="gananciasTinas">0</span></div>
-
-<div class="box">📦 Inversión<br>Potes: <span id="inversionPotes">0</span><br>Tinas: <span id="inversionTinas">0</span></div>
-
-<div class="box">🔄 Reinvertir<br>Potes: <span id="reinvertirPotes">0</span><br>Tinas: <span id="reinvertirTinas">0</span></div>
-
-<div class="box">💵 Hoy<br>Potes: <span id="hoyPotes">0</span><br>Tinas: <span id="hoyTinas">0</span></div>
-
-<div class="box">📊 Ventas<br>Potes: <span id="ventasPotes">0</span><br>Tinas: <span id="ventasTinas">0</span></div>
-
-<div class="box">📦 Disponibles<br>Potes: <span id="dispPotes">0</span><br>Tinas: <span id="dispTinas">0</span></div>
-
-</div>
-
-<div class="center">
-<button onclick="reiniciar()">Reiniciar</button>
-
-<br><br>
-
-<button onclick="exportar()">📤 Exportar JSON</button>
-<input type="file" onchange="importar(event)">
-
-<br><br>
-
-<button onclick="exportarExcel()">📊 Exportar Excel</button>
-</div>
-
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-
 <script>
-
-const firebaseConfig = {
- apiKey: "AIzaSyDgTmtl4VoF2UahIDZGVwQ11TuayHv2eHw",
- authDomain: "ventasjc-b1a1d.firebaseapp.com",
- projectId: "ventasjc-b1a1d"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-let productos=[];
-let conteoData={potes:0,tinas:0};
-
-function login(){
- if(user.value==="Julio" && pass.value==="1234*"){
-  loginDiv.style.display="none";
-  app.style.display="block";
- } else alert("Datos incorrectos");
-}
-
-function logout(){
- app.style.display="none";
- loginDiv.style.display="flex";
-}
-
-function agregar(){
- let c=+costo.value;
- let tipo = c===850?"pote":c===2900?"tina":null;
- if(!tipo)return alert("Costo inválido");
-
- let cantidad=+stock.value;
-
- db.collection("productos").add({
-  nombre:nombre.value,
-  stock:cantidad,
-  inventario:cantidad,
-  ventas:0,
-  costo:c,
-  precio:+precio.value,
-  tipo:tipo,
-  fecha: firebase.firestore.FieldValue.serverTimestamp()
- });
-}
-
-db.collection("productos").orderBy("fecha","asc")
-.onSnapshot(s=>{
- productos=[];
- s.forEach(d=>{let x=d.data();x.id=d.id;productos.push(x);});
- render();
-});
-
-function vender(id,i){
- let p=productos[i];
- if(p.stock<=0)return;
-
- db.collection("productos").doc(id).update({
-  stock:p.stock-1,
-  ventas:(p.ventas||0)+1
- });
-
- if(p.tipo==="pote") conteoData.potes++;
- else conteoData.tinas++;
-}
-
-function reiniciar(){
- db.collection("productos").get().then(s=>{
-  s.forEach(doc=>{
-   db.collection("productos").doc(doc.id).update({ventas:0});
-  });
- });
-
- conteoData={potes:0,tinas:0};
-}
 
 function render(){
 
@@ -251,7 +7,7 @@ function render(){
 
  let gP=0,gT=0,rP=0,rT=0,hP=0,hT=0;
 
- // 🔥 NUEVO
+ // 🔥 NUEVO (SOLO ESTO)
  let ventasP=0, ventasT=0;
 
  productos.forEach((p,i)=>{
@@ -259,40 +15,71 @@ function render(){
   let inv=p.inventario||0;
   let v=p.ventas||0;
 
+  // 🔥 SUMA REAL DE VENTAS (DESDE FIREBASE)
+  if(p.tipo==="pote") ventasP += v;
+  else ventasT += v;
+
   if(p.tipo==="pote"){
    invP+=inv*p.costo;
    dispP+=p.stock;
-   ventasP += v;
   }else{
    invT+=inv*p.costo;
    dispT+=p.stock;
-   ventasT += v;
   }
 
+  let gan=(p.precio-p.costo)*v;
+
+  if(p.tipo==="pote"){
+   gP+=gan; rP+=v*p.costo; hP+=v*p.precio;
+  }else{
+   gT+=gan; rT+=v*p.costo; hT+=v*p.precio;
+  }
+
+  let color = p.stock==0?"red":p.stock<=3?"orange":"black";
+  let icono = obtenerIcono(p.nombre);
+
+  let card=`
+  <div class='card'>
+  <b>${icono} ${p.nombre}</b>
+
+  <div class="info-row">
+    <div class="info-box"><span>🧾 Inventario</span><b>${inv}</b></div>
+    <div class="info-box"><span>📦 Disponibles</span><b style="color:${color}">${p.stock}</b></div>
+    <div class="info-box"><span>📊 Ventas</span><b>${v}</b></div>
+  </div>
+
+  <br>
+
+  <button onclick="vender('${p.id}',${i})">Vender</button>
+  <button onclick="editar('${p.id}',${i})">Editar</button>
+  <button onclick="eliminar('${p.id}')">Eliminar</button>
+  </div>`;
+
+  if(p.tipo==="pote") pHTML+=card;
+  else tHTML+=card;
  });
 
- // 🔥 CAMBIO IMPORTANTE
- ventasPotes.innerText=ventasP;
- ventasTinas.innerText=ventasT;
+ potes.innerHTML=pHTML;
+ tinas.innerHTML=tHTML;
+
+ gananciasPotes.innerText=gP;
+ gananciasTinas.innerText=gT;
+
+ inversionPotes.innerText=invP;
+ inversionTinas.innerText=invT;
+
+ reinvertirPotes.innerText=rP;
+ reinvertirTinas.innerText=rT;
+
+ hoyPotes.innerText=hP;
+ hoyTinas.innerText=hT;
+
+ // 🔥 AQUÍ EL CAMBIO IMPORTANTE
+ ventasPotes.innerText = ventasP;
+ ventasTinas.innerText = ventasT;
 
  dispPotes.innerText=dispP;
  dispTinas.innerText=dispT;
 }
 
-// ENTER LOGIN
-window.onload = function(){
- document.getElementById("user").focus();
-
- document.getElementById("user").addEventListener("keydown", e=>{
-  if(e.key==="Enter") login();
- });
-
- document.getElementById("pass").addEventListener("keydown", e=>{
-  if(e.key==="Enter") login();
- });
-};
-
 </script>
-
-</body>
-</html>
