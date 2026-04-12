@@ -36,6 +36,17 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 .flex{display:flex;gap:20px}
 .col{flex:1}
 
+/* 🔥 TITULOS CENTRADOS */
+.titulo{
+  text-align:center;
+  font-size:22px;
+  font-weight:bold;
+  padding:8px;
+  border-radius:10px;
+  background:rgba(0,0,0,0.4);
+  margin-bottom:10px;
+}
+
 .card{
   background:white;
   color:black;
@@ -111,8 +122,17 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 <button class="agregar" onclick="agregar()">Agregar</button>
 
 <div class="flex">
-<div class="col"><h3>Potes 1L</h3><div id="potes"></div></div>
-<div class="col"><h3>Tinas 4L</h3><div id="tinas"></div></div>
+
+<div class="col">
+  <h3 class="titulo">🍦 Potes 1L</h3>
+  <div id="potes"></div>
+</div>
+
+<div class="col">
+  <h3 class="titulo">🪣 Tinas 4L</h3>
+  <div id="tinas"></div>
+</div>
+
 </div>
 
 <div class="grid">
@@ -164,7 +184,6 @@ const db = firebase.firestore();
 let productos=[];
 let conteoData={potes:0,tinas:0};
 
-// 🔥 ICONOS POR SABOR
 function obtenerIcono(nombre){
  nombre = nombre.toLowerCase();
 
@@ -174,9 +193,6 @@ function obtenerIcono(nombre){
  if(nombre.includes("mango")) return "🥭";
  if(nombre.includes("coco")) return "🥥";
  if(nombre.includes("caramelo")) return "🍯";
- if(nombre.includes("pistacho")) return "🌰";
- if(nombre.includes("limón")) return "🍋";
- if(nombre.includes("naranja")) return "🍊";
 
  return "🍨";
 }
@@ -328,7 +344,6 @@ function render(){
   }
 
   let color = p.stock==0?"red":p.stock<=3?"orange":"black";
-
   let icono = obtenerIcono(p.nombre);
 
   let card=`
