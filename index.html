@@ -52,7 +52,6 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
   padding:15px;
   margin:10px 0;
   border-radius:12px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.3);
 }
 
 .info-row{
@@ -112,42 +111,27 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 
 <button class="logout" onclick="logout()">Cerrar sesión</button>
 
-<h2>VentasJC </h2>
+<h2>VentasJC</h2>
 
-<input id="nombre" placeholder="Nombre (Ej: Chocolate)">
+<input id="nombre" placeholder="Nombre">
 <input id="stock" placeholder="Inventario">
 <input id="costo" placeholder="Costo (850 o 2900)">
 <input id="precio" placeholder="Precio">
 <button class="agregar" onclick="agregar()">Agregar</button>
 
 <div class="flex">
-
 <div class="col">
   <h3 class="titulo">🍦 Potes 1L</h3>
   <div id="potes"></div>
 </div>
-
 <div class="col">
   <h3 class="titulo">🪣 Tinas 4L</h3>
   <div id="tinas"></div>
 </div>
-
 </div>
 
 <div class="grid">
-
-<div class="box">💰 Ganancias<br>Potes: <span id="gananciasPotes">0</span><br>Tinas: <span id="gananciasTinas">0</span></div>
-
-<div class="box">📦 Inversión<br>Potes: <span id="inversionPotes">0</span><br>Tinas: <span id="inversionTinas">0</span></div>
-
-<div class="box">🔄 Reinvertir<br>Potes: <span id="reinvertirPotes">0</span><br>Tinas: <span id="reinvertirTinas">0</span></div>
-
-<div class="box">💵 Hoy<br>Potes: <span id="hoyPotes">0</span><br>Tinas: <span id="hoyTinas">0</span></div>
-
 <div class="box">📊 Ventas<br>Potes: <span id="ventasPotes">0</span><br>Tinas: <span id="ventasTinas">0</span></div>
-
-<div class="box">📦 Disponibles<br>Potes: <span id="dispPotes">0</span><br>Tinas: <span id="dispTinas">0</span></div>
-
 </div>
 
 <div class="center">
@@ -162,9 +146,9 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 <script>
 
 const firebaseConfig = {
- apiKey: "AIzaSyDgTmtl4VoF2UahIDZGVwQ11TuayHv2eHw",
- authDomain: "ventasjc-b1a1d.firebaseapp.com",
- projectId: "ventasjc-b1a1d"
+ apiKey: "AIzaSy...",
+ authDomain: "...",
+ projectId: "..."
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -172,6 +156,7 @@ const db = firebase.firestore();
 
 let productos=[];
 
+// LOGIN
 function login(){
  if(user.value==="Julio" && pass.value==="1234*"){
   loginDiv.style.display="none";
@@ -184,17 +169,15 @@ function logout(){
  loginDiv.style.display="flex";
 }
 
+// AGREGAR
 function agregar(){
  let c=+costo.value;
  let tipo = c===850?"pote":c===2900?"tina":null;
  if(!tipo)return alert("Costo inválido");
 
- let cantidad=+stock.value;
-
  db.collection("productos").add({
   nombre:nombre.value,
-  stock:cantidad,
-  inventario:cantidad,
+  stock:+stock.value,
   ventas:0,
   costo:c,
   precio:+precio.value,
@@ -202,12 +185,18 @@ function agregar(){
  });
 }
 
+// TIEMPO REAL
 db.collection("productos").onSnapshot(s=>{
  productos=[];
- s.forEach(d=>{let x=d.data();x.id=d.id;productos.push(x);});
+ s.forEach(d=>{
+  let x=d.data();
+  x.id=d.id;
+  productos.push(x);
+ });
  render();
 });
 
+// VENDER
 function vender(id,i){
  let p=productos[i];
  if(p.stock<=0)return;
@@ -218,14 +207,16 @@ function vender(id,i){
  });
 }
 
+// REINICIAR
 function reiniciar(){
  db.collection("productos").get().then(s=>{
   s.forEach(doc=>{
    db.collection("productos").doc(doc.id).update({ventas:0});
   });
+ });
 }
 
-// 🔥 RENDER CORREGIDO
+// RENDER CORRECTO
 function render(){
 
  let ventasP=0, ventasT=0;
@@ -238,8 +229,22 @@ function render(){
 
  ventasPotes.innerText=ventasP;
  ventasTinas.innerText=ventasT;
-
 }
+
+// ENTER LOGIN (ARREGLADO)
+window.onload = function(){
+
+ document.getElementById("user").focus();
+
+ document.getElementById("user").addEventListener("keydown", function(e){
+  if(e.key === "Enter") login();
+ });
+
+ document.getElementById("pass").addEventListener("keydown", function(e){
+  if(e.key === "Enter") login();
+ });
+
+};
 
 </script>
 
