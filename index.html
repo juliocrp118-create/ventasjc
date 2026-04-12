@@ -152,22 +152,12 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 
 <div class="center">
 <button onclick="reiniciar()">Reiniciar</button>
-
-<br><br>
-
-<button onclick="exportar()">📤 Exportar JSON</button>
-<input type="file" onchange="importar(event)">
-
-<br><br>
-
-<button onclick="exportarExcel()">📊 Exportar Excel</button>
 </div>
 
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <script>
 
@@ -181,20 +171,6 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 let productos=[];
-let conteoData={potes:0,tinas:0};
-
-function obtenerIcono(nombre){
- nombre = nombre.toLowerCase();
-
- if(nombre.includes("chocolate")) return "🍫";
- if(nombre.includes("fresa")) return "🍓";
- if(nombre.includes("vainilla")) return "🍦";
- if(nombre.includes("mango")) return "🥭";
- if(nombre.includes("coco")) return "🥥";
- if(nombre.includes("caramelo")) return "🍯";
-
- return "🍨";
-}
 
 function login(){
  if(user.value==="Julio" && pass.value==="1234*"){
@@ -222,13 +198,11 @@ function agregar(){
   ventas:0,
   costo:c,
   precio:+precio.value,
-  tipo:tipo,
-  fecha: firebase.firestore.FieldValue.serverTimestamp()
+  tipo:tipo
  });
 }
 
-db.collection("productos").orderBy("fecha","asc")
-.onSnapshot(s=>{
+db.collection("productos").onSnapshot(s=>{
  productos=[];
  s.forEach(d=>{let x=d.data();x.id=d.id;productos.push(x);});
  render();
@@ -242,166 +216,30 @@ function vender(id,i){
   stock:p.stock-1,
   ventas:(p.ventas||0)+1
  });
-
- if(p.tipo==="pote") conteoData.potes++;
- else conteoData.tinas++;
-}
-
-function editar(id,i){
- let p=productos[i];
-
- let inv=prompt("Inventario:",p.inventario);
- let disp=prompt("Disponibles:",p.stock);
- let ven=prompt("Ventas:",p.ventas);
-
- if(inv!=null){
-  db.collection("productos").doc(id).update({
-   inventario:+inv,
-   stock:+disp,
-   ventas:+ven
-  });
- }
-}
-
-function eliminar(id){
- db.collection("productos").doc(id).delete();
 }
 
 function reiniciar(){
- if(!confirm("¿Reiniciar ventas?")) return;
-
  db.collection("productos").get().then(s=>{
   s.forEach(doc=>{
    db.collection("productos").doc(doc.id).update({ventas:0});
   });
- });
-
- conteoData={potes:0,tinas:0};
 }
 
-function exportar(){
- db.collection("productos").get().then(s=>{
-  let datos=[];s.forEach(d=>datos.push(d.data()));
-  let a=document.createElement("a");
-  a.href=URL.createObjectURL(new Blob([JSON.stringify(datos,null,2)]));
-  a.download="productos.json";a.click();
- });
-}
-
-function importar(e){
- let r=new FileReader();
- r.onload=x=>{
-  JSON.parse(x.target.result).forEach(p=>db.collection("productos").add(p));
- };
- r.readAsText(e.target.files[0]);
-}
-
-function exportarExcel(){
- db.collection("productos").get().then(s=>{
-  let d=[];s.forEach(doc=>{
-   let p=doc.data();
-   d.push({
-    Nombre:p.nombre,
-    Inventario:p.inventario,
-    Disponibles:p.stock,
-    Ventas:p.ventas
-   });
-  });
-  let hoja=XLSX.utils.json_to_sheet(d);
-  let libro=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(libro,hoja,"Datos");
-  XLSX.writeFile(libro,"ventas.xlsx");
- });
-}
-
+// 🔥 RENDER CORREGIDO
 function render(){
 
- let pHTML="",tHTML="";
- let invP=0,invT=0,dispP=0,dispT=0;
+ let ventasP=0, ventasT=0;
 
- let gP=0,gT=0,rP=0,rT=0,hP=0,hT=0;
-
- productos.forEach((p,i)=>{
-
-  let inv=p.inventario||0;
+ productos.forEach(p=>{
   let v=p.ventas||0;
-
-  if(p.tipo==="pote"){
-   invP+=inv*p.costo;
-   dispP+=p.stock;
-  }else{
-   invT+=inv*p.costo;
-   dispT+=p.stock;
-  }
-
-  let gan=(p.precio-p.costo)*v;
-
-  if(p.tipo==="pote"){
-   gP+=gan; rP+=v*p.costo; hP+=v*p.precio;
-  }else{
-   gT+=gan; rT+=v*p.costo; hT+=v*p.precio;
-  }
-
-  let color = p.stock==0?"red":p.stock<=3?"orange":"black";
-  let icono = obtenerIcono(p.nombre);
-
-  let card=`
-  <div class='card'>
-  <b>${icono} ${p.nombre}</b>
-
-  <div class="info-row">
-    <div class="info-box"><span>🧾 Inventario</span><b>${inv}</b></div>
-    <div class="info-box"><span>📦 Disponibles</span><b style="color:${color}">${p.stock}</b></div>
-    <div class="info-box"><span>📊 Ventas</span><b>${v}</b></div>
-  </div>
-
-  <br>
-
-  <button onclick="vender('${p.id}',${i})">Vender</button>
-  <button onclick="editar('${p.id}',${i})">Editar</button>
-  <button onclick="eliminar('${p.id}')">Eliminar</button>
-  </div>`;
-
-  if(p.tipo==="pote") pHTML+=card;
-  else tHTML+=card;
+  if(p.tipo==="pote") ventasP+=v;
+  else ventasT+=v;
  });
 
- potes.innerHTML=pHTML;
- tinas.innerHTML=tHTML;
+ ventasPotes.innerText=ventasP;
+ ventasTinas.innerText=ventasT;
 
- gananciasPotes.innerText=gP;
- gananciasTinas.innerText=gT;
-
- inversionPotes.innerText=invP;
- inversionTinas.innerText=invT;
-
- reinvertirPotes.innerText=rP;
- reinvertirTinas.innerText=rT;
-
- hoyPotes.innerText=hP;
- hoyTinas.innerText=hT;
-
- ventasPotes.innerText=conteoData.potes;
- ventasTinas.innerText=conteoData.tinas;
-
- dispPotes.innerText=dispP;
- dispTinas.innerText=dispT;
 }
-
-// 🔥 ÚNICO ARREGLO AGREGADO
-window.onload = function(){
-
-  document.getElementById("user").focus();
-
-  document.getElementById("user").addEventListener("keydown", function(e){
-    if(e.key === "Enter") login();
-  });
-
-  document.getElementById("pass").addEventListener("keydown", function(e){
-    if(e.key === "Enter") login();
-  });
-
-};
 
 </script>
 
