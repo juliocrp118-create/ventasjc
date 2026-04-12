@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>VentasJC FINAL PRO</title>
+<title>VentasJC PRO</title>
 
 <style>
 body{
@@ -42,14 +42,29 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
   padding:15px;
   margin:10px 0;
   border-radius:12px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.3);
 }
 
 .info-row{
   display:flex;
   justify-content:space-between;
-  margin-top:8px;
-  font-size:14px;
-  gap:10px;
+  margin-top:10px;
+  text-align:center;
+}
+
+.info-box{
+  flex:1;
+}
+
+.info-box span{
+  font-size:12px;
+  color:gray;
+}
+
+.info-box b{
+  display:block;
+  font-size:16px;
+  margin-top:3px;
 }
 
 .grid{
@@ -89,7 +104,7 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 
 <button class="logout" onclick="logout()">Cerrar sesión</button>
 
-<h2>VentasJC</h2>
+<h2>VentasJC PRO</h2>
 
 <input id="nombre" placeholder="Nombre">
 <input id="stock" placeholder="Inventario">
@@ -103,29 +118,10 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 </div>
 
 <div class="grid">
-  <div class="box">
-    💰 Ganancias<br><br>
-    Potes: <span id="gananciasPotes">0</span><br>
-    Tinas: <span id="gananciasTinas">0</span>
-  </div>
-
-  <div class="box">
-    📦 Inversión<br><br>
-    Potes: <span id="inversionPotes">0</span><br>
-    Tinas: <span id="inversionTinas">0</span>
-  </div>
-
-  <div class="box">
-    🔄 Reinvertir<br><br>
-    Potes: <span id="reinvertirPotes">0</span><br>
-    Tinas: <span id="reinvertirTinas">0</span>
-  </div>
-
-  <div class="box">
-    💵 Hoy<br><br>
-    Potes: <span id="hoyPotes">0</span><br>
-    Tinas: <span id="hoyTinas">0</span>
-  </div>
+  <div class="box">💰 Ganancias<br>Potes: <span id="gananciasPotes">0</span><br>Tinas: <span id="gananciasTinas">0</span></div>
+  <div class="box">📦 Inversión<br>Potes: <span id="inversionPotes">0</span><br>Tinas: <span id="inversionTinas">0</span></div>
+  <div class="box">🔄 Reinvertir<br>Potes: <span id="reinvertirPotes">0</span><br>Tinas: <span id="reinvertirTinas">0</span></div>
+  <div class="box">💵 Hoy<br>Potes: <span id="hoyPotes">0</span><br>Tinas: <span id="hoyTinas">0</span></div>
 </div>
 
 <div class="center">
@@ -169,14 +165,12 @@ function logout(){
  loginDiv.style.display="flex";
 }
 
-// AGREGAR
 function agregar(){
-
  let c = +costo.value;
  let tipo = "";
 
- if(c === 850) tipo = "pote";
- else if(c === 2900) tipo = "tina";
+ if(c === 850) tipo="pote";
+ else if(c === 2900) tipo="tina";
  else return alert("Costo inválido");
 
  let cantidad = +stock.value;
@@ -193,7 +187,6 @@ function agregar(){
  });
 }
 
-// REALTIME
 db.collection("productos").orderBy("fecha","asc")
 .onSnapshot(snapshot=>{
  productos=[];
@@ -204,7 +197,6 @@ db.collection("productos").orderBy("fecha","asc")
  render();
 });
 
-// VENDER
 function vender(id,i){
  let p=productos[i];
  if(p.stock<=0)return;
@@ -218,7 +210,6 @@ function vender(id,i){
  else conteoData.tinas++;
 }
 
-// EDITAR
 function editar(id,i){
  let p=productos[i];
 
@@ -244,7 +235,6 @@ function reiniciar(){
  render();
 }
 
-// RENDER
 function render(){
 
  let pHTML="",tHTML="";
@@ -274,14 +264,27 @@ function render(){
      hTinas += ventas * p.precio;
    }
 
+   let colorStock = p.stock <= 2 ? "red" : "black";
+
    let card=`
    <div class='card'>
-   ${p.nombre}
+   <b>${p.nombre}</b>
 
    <div class="info-row">
-     <div>🧾 Inventario: ${inventario}</div>
-     <div>📦 Disponibles: ${p.stock}</div>
-     <div>📊 Ventas: ${ventas}</div>
+     <div class="info-box">
+       <span>🧾 Inventario</span>
+       <b>${inventario}</b>
+     </div>
+
+     <div class="info-box">
+       <span>📦 Disponibles</span>
+       <b style="color:${colorStock}">${p.stock}</b>
+     </div>
+
+     <div class="info-box">
+       <span>📊 Ventas</span>
+       <b>${ventas}</b>
+     </div>
    </div>
 
    <br>
