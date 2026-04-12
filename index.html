@@ -381,8 +381,17 @@ function render(){
  hoyPotes.innerText=hP;
  hoyTinas.innerText=hT;
 
- ventasPotes.innerText=conteoData.potes;
- ventasTinas.innerText=conteoData.tinas;
+ let ventasP=0, ventasT=0;
+
+productos.forEach(p=>{
+  let v = p.ventas || 0;
+
+  if(p.tipo==="pote") ventasP += v;
+  else ventasT += v;
+});
+
+ventasPotes.innerText = ventasP;
+ventasTinas.innerText = ventasT;
 
  dispPotes.innerText=dispP;
  dispTinas.innerText=dispT;
@@ -407,3 +416,4 @@ window.onload = function(){
 
 </body>
 </html>
+
