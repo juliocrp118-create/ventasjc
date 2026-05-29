@@ -147,8 +147,15 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 <div class="box">📊 Ventas<br>Potes: <span id="ventasPotes">0</span><br>Tinas: <span id="ventasTinas">0</span></div>
 
 <div class="box">📦 Disponibles<br>Potes: <span id="dispPotes">0</span><br>Tinas: <span id="dispTinas">0</span></div>
+<div class="box">
+  <div class="box">
+🏆 Más Vendidos<br><span id="topVentas">Sin datos</span>
+</div>
 
 </div>
+⚠️ Poco Inventario<br><span id="alertasStock">Todo bien</span>
+</div>
+  </div>
 
 <div class="center">
 <button onclick="reiniciar()">Reiniciar</button>
@@ -323,6 +330,7 @@ function render(){
  let invP=0,invT=0,dispP=0,dispT=0;
 
  let gP=0,gT=0,rP=0,rT=0,hP=0,hT=0;
+  let alertas = [];
 
  productos.forEach((p,i)=>{
 
@@ -346,6 +354,9 @@ function render(){
   }
 
   let color = p.stock==0?"red":p.stock<=3?"orange":"black";
+   if(p.stock <= 3 && p.stock > 0){
+   alertas.push(`⚠️ ${p.nombre}: ${p.stock}`);
+}
   let icono = obtenerIcono(p.nombre);
 
   let card=`
@@ -399,6 +410,23 @@ ventasTinas.innerText = ventasT;
  dispPotes.innerText=dispP;
  dispTinas.innerText=dispT;
 }
+  // ALERTAS
+alertasStock.innerHTML =
+alertas.length
+? alertas.join("<br>")
+: "Todo bien";
+
+// TOP VENTAS
+let top = [...productos]
+.sort((a,b)=>(b.ventas||0)-(a.ventas||0))
+.slice(0,3);
+
+topVentas.innerHTML =
+top.length
+? top.map((p,i)=>
+`${i+1}. ${p.nombre} (${p.ventas||0})`
+).join("<br>")
+: "Sin datos";
 
 // 🔥 ÚNICO ARREGLO AGREGADO
 window.onload = function(){
