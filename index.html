@@ -236,6 +236,8 @@ db.collection("productos").orderBy("fecha","asc")
  s.forEach(d=>{let x=d.data();x.id=d.id;productos.push(x);});
  render();
 });
+  alertasStock.innerHTML =
+  alertas.length ? alertas.join("<br>") : "Todo bien";
 
 function vender(id,i){
  let p=productos[i];
@@ -368,7 +370,17 @@ function render(){
   if(p.tipo==="pote") pHTML+=card;
   else tHTML+=card;
  });
+let alertas = [];
 
+productos.forEach(p=>{
+  if(p.stock <= 3 && p.stock > 0){
+    alertas.push(`⚠️ ${p.nombre}: ${p.stock}`);
+  }
+});
+  <div class="box">
+⚠️ Poco Inventario<br>
+<span id="alertasStock">Todo bien</span>
+</div>
  potes.innerHTML=pHTML;
  tinas.innerHTML=tHTML;
 
