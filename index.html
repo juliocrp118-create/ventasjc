@@ -116,7 +116,7 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 
 <input id="nombre" placeholder="Nombre (Ej: Chocolate)">
 <input id="stock" placeholder="Inventario">
-<input id="costo" placeholder="Costo (850 o 2900)">
+<input id="costo" placeholder="Costo (950 o 3000)">
 <input id="precio" placeholder="Precio">
 <button class="agregar" onclick="agregar()">Agregar</button>
 
@@ -210,7 +210,7 @@ function logout(){
 
 function agregar(){
  let c=+costo.value;
- let tipo = c===850?"pote":c===2900?"tina":null;
+ let tipo = c===950?"pote":c===3000?"tina":null;
  if(!tipo)return alert("Costo inválido");
 
  let cantidad=+stock.value;
