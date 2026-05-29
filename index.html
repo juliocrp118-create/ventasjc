@@ -411,10 +411,10 @@ productos.forEach(p=>{
 ventasPotes.innerText = ventasP;
 ventasTinas.innerText = ventasT;
 
- dispPotes.innerText=dispP;
- dispTinas.innerText=dispT;
-}
-  // ALERTAS
+dispPotes.innerText=dispP;
+dispTinas.innerText=dispT;
+
+// ALERTAS
 alertasStock.innerHTML =
 alertas.length
 ? alertas.join("<br>")
@@ -431,6 +431,8 @@ top.length
 `${i+1}. ${p.nombre} (${p.ventas||0})`
 ).join("<br>")
 : "Sin datos";
+
+}
 
 // 🔥 ÚNICO ARREGLO AGREGADO
 window.onload = function(){
