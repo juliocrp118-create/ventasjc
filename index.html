@@ -117,7 +117,7 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 <input id="nombre" placeholder="Nombre (Ej: Chocolate)">
 <input id="stock" placeholder="Inventario">
 <input id="costo" placeholder="Costo (950 o 3000)">
-<input id="precio" placeholder="Precio">
+<input id="precio" placeholder="Precio automático" readonly>
 <button class="agregar" onclick="agregar()">Agregar</button>
 
 <div class="flex">
@@ -209,22 +209,40 @@ function logout(){
 }
 
 function agregar(){
- let c=+costo.value;
- let tipo = c===950?"pote":c===3000?"tina":null;
- if(!tipo)return alert("Costo inválido");
 
- let cantidad=+stock.value;
+ let c = +costo.value;
+ let tipo = null;
+ let precioVenta = 0;
+
+ if(c === 850){
+   tipo = "pote";
+   precioVenta = 950;
+ }
+ else if(c === 2900){
+   tipo = "tina";
+   precioVenta = 3000;
+ }
+ else{
+   return alert("Costo inválido");
+ }
+
+ let cantidad = +stock.value;
 
  db.collection("productos").add({
-  nombre:nombre.value,
-  stock:cantidad,
-  inventario:cantidad,
-  ventas:0,
-  costo:c,
-  precio:+precio.value,
-  tipo:tipo,
-  fecha: firebase.firestore.FieldValue.serverTimestamp()
+   nombre: nombre.value,
+   stock: cantidad,
+   inventario: cantidad,
+   ventas: 0,
+   costo: c,
+   precio: precioVenta,
+   tipo: tipo,
+   fecha: firebase.firestore.FieldValue.serverTimestamp()
  });
+
+ nombre.value = "";
+ stock.value = "";
+ costo.value = "";
+ precio.value = "";
 }
 
 db.collection("productos").orderBy("fecha","asc")
@@ -411,6 +429,19 @@ window.onload = function(){
   });
 
 };
+  costo.addEventListener("input", ()=>{
+
+ if(+costo.value === 850){
+   precio.value = 950;
+ }
+ else if(+costo.value === 2900){
+   precio.value = 3000;
+ }
+ else{
+   precio.value = "";
+ }
+
+});
 
 </script>
 
