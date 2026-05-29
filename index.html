@@ -145,6 +145,14 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 <div class="box">💵 Hoy<br>Potes: <span id="hoyPotes">0</span><br>Tinas: <span id="hoyTinas">0</span></div>
 
 <div class="box">📊 Ventas<br>Potes: <span id="ventasPotes">0</span><br>Tinas: <span id="ventasTinas">0</span></div>
+  <div class="box">
+📅 Mes Actual<br>
+Ventas Potes: <span id="mesVentasPotes">0</span><br>
+Ventas Tinas: <span id="mesVentasTinas">0</span><br><br>
+
+💰 Ganancia Potes: <span id="mesGananciaPotes">0</span><br>
+💰 Ganancia Tinas: <span id="mesGananciaTinas">0</span>
+</div>
 
 <div class="box">📦 Disponibles<br>Potes: <span id="dispPotes">0</span><br>Tinas: <span id="dispTinas">0</span></div>
 
@@ -323,6 +331,8 @@ function render(){
  let invP=0,invT=0,dispP=0,dispT=0;
 
  let gP=0,gT=0,rP=0,rT=0,hP=0,hT=0;
+  let mesVP=0, mesVT=0;
+let mesGP=0, mesGT=0;
 
  productos.forEach((p,i)=>{
 
@@ -338,6 +348,13 @@ function render(){
   }
 
   let gan=(p.precio-p.costo)*v;
+   if(p.tipo==="pote"){
+  mesVP += v;
+  mesGP += gan;
+}else{
+  mesVT += v;
+  mesGT += gan;
+}
 
   if(p.tipo==="pote"){
    gP+=gan; rP+=v*p.costo; hP+=v*p.precio;
@@ -398,6 +415,11 @@ ventasTinas.innerText = ventasT;
 
  dispPotes.innerText=dispP;
  dispTinas.innerText=dispT;
+  mesVentasPotes.innerText = mesVP;
+mesVentasTinas.innerText = mesVT;
+
+mesGananciaPotes.innerText = mesGP;
+mesGananciaTinas.innerText = mesGT;
 }
 
 // 🔥 ÚNICO ARREGLO AGREGADO
