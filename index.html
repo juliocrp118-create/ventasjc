@@ -210,7 +210,10 @@ function logout(){
 
 function agregar(){
  let c=+costo.value;
- let tipo = c===950?"pote":c===3000?"tina":null;
+let tipo =
+  (c===950 || c===1000) ? "pote" :
+  (c===3000 || c===3100) ? "tina" :
+  null;
  if(!tipo)return alert("Costo inválido");
 
  let cantidad=+stock.value;
