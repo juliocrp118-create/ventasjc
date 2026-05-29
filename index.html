@@ -157,19 +157,6 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 <div class="center">
 <button onclick="reiniciar()">Reiniciar</button>
 <button onclick="reiniciarMes()">📅 Reiniciar Mes</button>
-  function reiniciarMes(){
-
- if(!confirm("¿Reiniciar estadísticas del mes?")) return;
-
- db.collection("productos").get().then(s=>{
-   s.forEach(doc=>{
-     db.collection("productos").doc(doc.id).update({
-       ventasMes:0
-     });
-   });
- });
-
-}
 
 <br><br>
 
@@ -301,7 +288,20 @@ function reiniciar(){
 
  conteoData={potes:0,tinas:0};
 }
+  
+function reiniciarMes(){
 
+ if(!confirm("¿Reiniciar estadísticas del mes?")) return;
+
+ db.collection("productos").get().then(s=>{
+   s.forEach(doc=>{
+     db.collection("productos").doc(doc.id).update({
+       ventasMes:0
+     });
+   });
+ });
+
+}
 function exportar(){
  db.collection("productos").get().then(s=>{
   let datos=[];s.forEach(d=>datos.push(d.data()));
