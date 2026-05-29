@@ -116,7 +116,7 @@ button{padding:10px;margin:5px;border:none;border-radius:8px;cursor:pointer;font
 
 <input id="nombre" placeholder="Nombre (Ej: Chocolate)">
 <input id="stock" placeholder="Inventario">
-<input id="costo" placeholder="Costo (950 o 3000)">
+<input id="costo" placeholder="Costo (850 o 2900)">
 <input id="precio" placeholder="Precio automático" readonly>
 <button class="agregar" onclick="agregar()">Agregar</button>
 
@@ -344,21 +344,32 @@ function render(){
   let inv=p.inventario||0;
   let v=p.ventas||0;
 
-  if(p.tipo==="pote"){
-   invP+=inv*p.costo;
-   dispP+=p.stock;
-  }else{
-   invT+=inv*p.costo;
-   dispT+=p.stock;
-  }
+if(p.tipo==="pote"){
+   gP += gan;
+   rP += v * p.costo;
+   hP += v * precioReal;
+}else{
+   gT += gan;
+   rT += v * p.costo;
+   hT += v * precioReal;
+}
 
-  let gan=(p.precio-p.costo)*v;
+  let precioReal = p.precio;
+
+if(p.costo === 850) precioReal = 950;
+if(p.costo === 2900) precioReal = 3000;
+
+let gan = (precioReal - p.costo) * v;
 
   if(p.tipo==="pote"){
-   gP+=gan; rP+=v*p.costo; hP+=v*p.precio;
-  }else{
-   gT+=gan; rT+=v*p.costo; hT+=v*p.precio;
-  }
+   gP += gan;
+   rP += v * p.costo;
+   hP += v * precioReal;
+}else{
+   gT += gan;
+   rT += v * p.costo;
+   hT += v * precioReal;
+}
 
   let color = p.stock==0?"red":p.stock<=3?"orange":"black";
   let icono = obtenerIcono(p.nombre);
